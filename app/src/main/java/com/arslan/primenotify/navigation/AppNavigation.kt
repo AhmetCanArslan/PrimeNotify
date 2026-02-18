@@ -19,8 +19,18 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.arslan.primenotify.service.isPrimeNotifyServiceEnabled
+import com.arslan.primenotify.service.setPrimeNotifyServiceEnabled
 import com.arslan.primenotify.ui.home.HomeScreen
 import com.arslan.primenotify.ui.permissions.PermissionsScreen
 
@@ -29,11 +39,69 @@ sealed class Screen(val route: String, val label: String) {
     data object Permissions : Screen("permissions", "Permissions")
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     Scaffold(
+        topBar = {
+            val currentBackStackEntry = navController.currentBackStackEntryAsState()
+            val currentRoute = currentBackStackEntry.value?.destination?.route
+            
+            when (currentRoute) {
+                Screen.Home.route -> {
+                    val permissionItems = com.arslan.primenotify.ui.home.buildPermissionItems(context)
+                    val allPermissionsGranted = permissionItems.all { it.granted }
+                    val primeNotifyServiceEnabled = isPrimeNotifyServiceEnabled(context)
+                    
+                    TopAppBar(
+                        title = {
+                            Text(
+                                text = "PrimeNotify",
+                                style = MaterialTheme.typography.headlineLarge,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(start = 16.dp)
+                            )
+                        },
+                        actions = {
+                            Switch(
+                                checked = primeNotifyServiceEnabled,
+                                onCheckedChange = {
+                                    if (!allPermissionsGranted && it) return@Switch
+                                    setPrimeNotifyServiceEnabled(context, it)
+                                },
+                                enabled = allPermissionsGranted || primeNotifyServiceEnabled,
+                                modifier = Modifier.padding(end = 28.dp)
+                            )
+                        }
+                    )
+                }
+                Screen.Permissions.route -> {
+                    TopAppBar(
+                        title = {
+                            Text(
+                                text = "Permissions",
+                                style = MaterialTheme.typography.headlineLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    )
+                }
+                else -> {
+                    TopAppBar(
+                        title = {
+                            Text(
+                                text = "PrimeNotify",
+                                style = MaterialTheme.typography.headlineLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    )
+                }
+            }
+        },
         bottomBar = {
             NavigationBar {
                 val currentBackStackEntry = navController.currentBackStackEntryAsState()

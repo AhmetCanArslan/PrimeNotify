@@ -83,28 +83,13 @@ fun PermissionsScreen(modifier: Modifier = Modifier) {
 
     val permissionItems = remember(refreshState) { buildPermissionItems(context) }
 
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Permissions",
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            )
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
             permissionItems.forEach { item ->
                 Row(
                     modifier = Modifier
@@ -175,7 +160,6 @@ fun PermissionsScreen(modifier: Modifier = Modifier) {
             }
         }
     }
-}
 
 @Preview(showBackground = true)
 @Composable

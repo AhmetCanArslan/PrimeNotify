@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,11 +18,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -41,10 +40,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import android.content.pm.PackageManager
-import androidx.compose.foundation.layout.Row
 import androidx.core.app.NotificationManagerCompat
-import com.arslan.primenotify.service.isPrimeNotifyServiceEnabled
-import com.arslan.primenotify.service.setPrimeNotifyServiceEnabled
 import com.arslan.primenotify.ui.theme.PrimeNotifyTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,41 +70,13 @@ fun HomeScreen(modifier: Modifier = Modifier) {
     var aodEnabled by rememberSaveable { mutableStateOf(false) }
     var regexPattern by rememberSaveable { mutableStateOf("^OTP:.*$") }
 
-    val primeNotifyServiceEnabled = isPrimeNotifyServiceEnabled(context)
-
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Home",
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                actions = {
-                    Switch(
-                        checked = primeNotifyServiceEnabled,
-                        onCheckedChange = {
-                            if (!allPermissionsGranted && it) return@Switch
-                            setPrimeNotifyServiceEnabled(context, it)
-                            refreshState++
-                        },
-                        enabled = allPermissionsGranted || primeNotifyServiceEnabled
-                    )
-                }
-            )
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -186,7 +154,6 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             }
         }
     }
-}
 
 @Composable
 private fun ToggleRow(
@@ -236,7 +203,7 @@ private fun HomeScreenPreview() {
     }
 }
 
-private enum class PermissionType {
+enum class PermissionType {
     NotificationAccess,
     PostNotifications,
     Camera,
@@ -247,14 +214,14 @@ private enum class PermissionType {
     WakeLock
 }
 
-private data class PermissionItem(
+data class PermissionItem(
     val type: PermissionType,
     val title: String,
     val description: String,
     val granted: Boolean
 )
 
-private fun buildPermissionItems(context: Context): List<PermissionItem> {
+fun buildPermissionItems(context: Context): List<PermissionItem> {
     val notificationManager = context.getSystemService(android.app.NotificationManager::class.java)
     val postNotificationsGranted =
         Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
