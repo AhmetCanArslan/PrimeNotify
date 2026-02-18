@@ -157,10 +157,6 @@ fun PermissionsScreen(modifier: Modifier = Modifier) {
                                     PermissionType.NotificationPolicy -> {
                                         settingsLauncher.launch(Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS))
                                     }
-
-                                    PermissionType.Vibrate,
-                                    PermissionType.ModifyAudio,
-                                    PermissionType.WakeLock -> Unit
                                 }
                             }
                         ) {
@@ -185,10 +181,7 @@ private enum class PermissionType {
     PostNotifications,
     Camera,
     WriteSettings,
-    NotificationPolicy,
-    Vibrate,
-    ModifyAudio,
-    WakeLock
+    NotificationPolicy
 }
 
 private data class PermissionItem(
@@ -250,24 +243,6 @@ private fun buildPermissionItems(context: Context): List<PermissionItem> {
             title = "Notification Policy Access",
             description = "Zil ve titreşim davranışını değiştirebilmek için",
             granted = notificationPolicyGranted
-        ),
-        PermissionItem(
-            type = PermissionType.Vibrate,
-            title = "Vibrate",
-            description = "Titreşim motorunu kontrol etmek için",
-            granted = true
-        ),
-        PermissionItem(
-            type = PermissionType.ModifyAudio,
-            title = "Modify Audio Settings",
-            description = "Mevcut zil/titreşim ayarlarını düzenlemek için",
-            granted = true
-        ),
-        PermissionItem(
-            type = PermissionType.WakeLock,
-            title = "Wake Lock",
-            description = "Ekranı uyandırma senaryoları için",
-            granted = true
         )
     )
 }
