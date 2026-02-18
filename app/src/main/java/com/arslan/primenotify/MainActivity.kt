@@ -4,8 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.ui.Modifier
-import com.arslan.primenotify.ui.home.HomeScreen
+import com.arslan.primenotify.navigation.AppNavigation
 import com.arslan.primenotify.ui.theme.PrimeNotifyTheme
 
 class MainActivity : ComponentActivity() {
@@ -14,7 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PrimeNotifyTheme {
-                HomeScreen(modifier = Modifier)
+                AppNavigation()
             }
         }
     }

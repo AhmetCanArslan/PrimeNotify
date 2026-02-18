@@ -1,20 +1,9 @@
 package com.arslan.primenotify.ui.home
 
-import android.Manifest
-import android.app.NotificationManager
 import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
-import android.provider.Settings
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -36,24 +25,24 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import android.content.pm.PackageManager
+import androidx.compose.foundation.layout.Row
+import androidx.core.app.NotificationManagerCompat
 import com.arslan.primenotify.service.isPrimeNotifyServiceEnabled
 import com.arslan.primenotify.service.setPrimeNotifyServiceEnabled
 import com.arslan.primenotify.ui.theme.PrimeNotifyTheme
@@ -77,35 +66,8 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         }
     }
 
-    val requestPostNotificationsLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) {
-        refreshState++
-    }
-
-    val requestCameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) {
-        refreshState++
-    }
-
-    val settingsLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) {
-        refreshState++
-    }
-
     val permissionItems = remember(refreshState) { buildPermissionItems(context) }
     val allPermissionsGranted = permissionItems.all { it.granted }
-    val grantedPermissionCount = permissionItems.count { it.granted }
-    val totalPermissionCount = permissionItems.size
-    var permissionExpanded by rememberSaveable { mutableStateOf(true) }
-
-    LaunchedEffect(allPermissionsGranted) {
-        if (allPermissionsGranted) {
-            permissionExpanded = false
-        }
-    }
 
     var regexFlashEnabled by rememberSaveable { mutableStateOf(false) }
     var wakeUpScreenEnabled by rememberSaveable { mutableStateOf(false) }
@@ -120,7 +82,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             TopAppBar(
                 title = {
                     Text(
-                        text = "PrimeNotify",
+                        text = "Home",
                         style = MaterialTheme.typography.headlineLarge,
                         fontWeight = FontWeight.Bold
                     )
@@ -144,137 +106,9 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 12.dp)
-            
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) { 
-
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        permissionExpanded = !permissionExpanded
-                    },
-                border = BorderStroke(
-                    width = 2.dp,
-                    color = if (allPermissionsGranted) Color(0xFF2E7D32) else MaterialTheme.colorScheme.outline
-                ),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Permissions",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = if (allPermissionsGranted) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "$grantedPermissionCount/$totalPermissionCount",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = if (allPermissionsGranted) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-
-            if (permissionExpanded) {
-                permissionItems.forEach { item ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 14.dp),
-                        colors = CardDefaults.cardColors(
-                             MaterialTheme.colorScheme.surfaceContainer
-                            
-                        ),
-                        border = BorderStroke(
-                            width = 1.dp,
-                            color = if (item.granted) Color(0xFF2E7D32) else MaterialTheme.colorScheme.outlineVariant
-                        )
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(end = 12.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Text(
-                                    text = item.title,
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = if (item.granted) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = item.description,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-
-                            Button(
-                                onClick = {
-                                    when (item.type) {
-                                        PermissionType.PostNotifications -> {
-                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                                requestPostNotificationsLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                                            }
-                                        }
-
-                                        PermissionType.Camera -> {
-                                            requestCameraLauncher.launch(Manifest.permission.CAMERA)
-                                        }
-
-                                        PermissionType.NotificationAccess -> {
-                                            settingsLauncher.launch(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-                                        }
-
-                                        PermissionType.WriteSettings -> {
-                                            settingsLauncher.launch(
-                                                Intent(
-                                                    Settings.ACTION_MANAGE_WRITE_SETTINGS,
-                                                    Uri.parse("package:${context.packageName}")
-                                                )
-                                            )
-                                        }
-
-                                        PermissionType.NotificationPolicy -> {
-                                            settingsLauncher.launch(Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS))
-                                        }
-
-                                        PermissionType.Vibrate,
-                                        PermissionType.ModifyAudio,
-                                        PermissionType.WakeLock -> Unit
-                                    }
-                                },
-                                enabled = !item.granted
-                            ) {
-                                Text(if (item.granted) "Verildi" else "Ver")
-                            }
-                        }
-                    }
-                }
-            }
-
-            Text(
-                text = "Ana Kontroller",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
+        ) {
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -421,24 +255,24 @@ private data class PermissionItem(
 )
 
 private fun buildPermissionItems(context: Context): List<PermissionItem> {
-    val notificationManager = context.getSystemService(NotificationManager::class.java)
+    val notificationManager = context.getSystemService(android.app.NotificationManager::class.java)
     val postNotificationsGranted =
         Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
             ContextCompat.checkSelfPermission(
                 context,
-                Manifest.permission.POST_NOTIFICATIONS
+                android.Manifest.permission.POST_NOTIFICATIONS
             ) == PackageManager.PERMISSION_GRANTED
 
     val cameraGranted = ContextCompat.checkSelfPermission(
         context,
-        Manifest.permission.CAMERA
+        android.Manifest.permission.CAMERA
     ) == PackageManager.PERMISSION_GRANTED
 
     val notificationAccessGranted = NotificationManagerCompat
         .getEnabledListenerPackages(context)
         .contains(context.packageName)
 
-    val writeSettingsGranted = Settings.System.canWrite(context)
+    val writeSettingsGranted = android.provider.Settings.System.canWrite(context)
 
     val notificationPolicyGranted = notificationManager?.isNotificationPolicyAccessGranted == true
 
