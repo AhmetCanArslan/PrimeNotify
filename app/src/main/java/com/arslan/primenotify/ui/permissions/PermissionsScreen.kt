@@ -19,7 +19,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -86,7 +88,7 @@ fun PermissionsScreen(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .padding(start = 32.dp, end = 32.dp, top = 12.dp, bottom = 12.dp)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -117,44 +119,53 @@ fun PermissionsScreen(modifier: Modifier = Modifier) {
                         )
                     }
 
-                    Button(
-                        onClick = {
-                            when (item.type) {
-                                PermissionType.PostNotifications -> {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                        requestPostNotificationsLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    if (item.granted) {
+                        OutlinedButton(
+                            onClick = {},
+                            border = BorderStroke(1.dp, Color(0xFF4CAF50)),
+                            enabled = false
+                        ) {
+                            Text("Granted")
+                        }
+                    } else {
+                        Button(
+                            onClick = {
+                                when (item.type) {
+                                    PermissionType.PostNotifications -> {
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                            requestPostNotificationsLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                        }
                                     }
-                                }
 
-                                PermissionType.Camera -> {
-                                    requestCameraLauncher.launch(Manifest.permission.CAMERA)
-                                }
+                                    PermissionType.Camera -> {
+                                        requestCameraLauncher.launch(Manifest.permission.CAMERA)
+                                    }
 
-                                PermissionType.NotificationAccess -> {
-                                    settingsLauncher.launch(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-                                }
+                                    PermissionType.NotificationAccess -> {
+                                        settingsLauncher.launch(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                                    }
 
-                                PermissionType.WriteSettings -> {
-                                    settingsLauncher.launch(
-                                        Intent(
-                                            Settings.ACTION_MANAGE_WRITE_SETTINGS,
-                                            Uri.parse("package:${context.packageName}")
+                                    PermissionType.WriteSettings -> {
+                                        settingsLauncher.launch(
+                                            Intent(
+                                                Settings.ACTION_MANAGE_WRITE_SETTINGS,
+                                                Uri.parse("package:${context.packageName}")
+                                            )
                                         )
-                                    )
-                                }
+                                    }
 
-                                PermissionType.NotificationPolicy -> {
-                                    settingsLauncher.launch(Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS))
-                                }
+                                    PermissionType.NotificationPolicy -> {
+                                        settingsLauncher.launch(Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS))
+                                    }
 
-                                PermissionType.Vibrate,
-                                PermissionType.ModifyAudio,
-                                PermissionType.WakeLock -> Unit
+                                    PermissionType.Vibrate,
+                                    PermissionType.ModifyAudio,
+                                    PermissionType.WakeLock -> Unit
+                                }
                             }
-                        },
-                        enabled = !item.granted
-                    ) {
-                        Text(if (item.granted) "Granted" else "Grant")
+                        ) {
+                            Text("Grant")
+                        }
                     }
                 }
             }
