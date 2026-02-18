@@ -47,60 +47,31 @@ fun AppNavigation() {
 
     Scaffold(
         topBar = {
-            val currentBackStackEntry = navController.currentBackStackEntryAsState()
-            val currentRoute = currentBackStackEntry.value?.destination?.route
+            val permissionItems = com.arslan.primenotify.ui.home.buildPermissionItems(context)
+            val allPermissionsGranted = permissionItems.all { it.granted }
+            val primeNotifyServiceEnabled = isPrimeNotifyServiceEnabled(context)
             
-            when (currentRoute) {
-                Screen.Home.route -> {
-                    val permissionItems = com.arslan.primenotify.ui.home.buildPermissionItems(context)
-                    val allPermissionsGranted = permissionItems.all { it.granted }
-                    val primeNotifyServiceEnabled = isPrimeNotifyServiceEnabled(context)
-                    
-                    TopAppBar(
-                        title = {
-                            Text(
-                                text = "PrimeNotify",
-                                style = MaterialTheme.typography.headlineLarge,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(start = 16.dp)
-                            )
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "PrimeNotify",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
+                },
+                actions = {
+                    Switch(
+                        checked = primeNotifyServiceEnabled,
+                        onCheckedChange = {
+                            if (!allPermissionsGranted && it) return@Switch
+                            setPrimeNotifyServiceEnabled(context, it)
                         },
-                        actions = {
-                            Switch(
-                                checked = primeNotifyServiceEnabled,
-                                onCheckedChange = {
-                                    if (!allPermissionsGranted && it) return@Switch
-                                    setPrimeNotifyServiceEnabled(context, it)
-                                },
-                                enabled = allPermissionsGranted || primeNotifyServiceEnabled,
-                                modifier = Modifier.padding(end = 28.dp)
-                            )
-                        }
+                        enabled = allPermissionsGranted || primeNotifyServiceEnabled,
+                        modifier = Modifier.padding(end = 32.dp)
                     )
                 }
-                Screen.Permissions.route -> {
-                    TopAppBar(
-                        title = {
-                            Text(
-                                text = "Permissions",
-                                style = MaterialTheme.typography.headlineLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    )
-                }
-                else -> {
-                    TopAppBar(
-                        title = {
-                            Text(
-                                text = "PrimeNotify",
-                                style = MaterialTheme.typography.headlineLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    )
-                }
-            }
+            )
         },
         bottomBar = {
             NavigationBar {
@@ -140,7 +111,7 @@ fun AppNavigation() {
         NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding).padding(top = 8.dp)
         ) {
             composable(
                 route = Screen.Home.route,
