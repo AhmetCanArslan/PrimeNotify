@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -157,6 +158,15 @@ fun PermissionsScreen(modifier: Modifier = Modifier) {
                                     PermissionType.NotificationPolicy -> {
                                         settingsLauncher.launch(Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS))
                                     }
+
+                                    PermissionType.IgnoreBatteryOptimizations -> {
+                                        settingsLauncher.launch(
+                                            Intent(
+                                                Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                                                Uri.parse("package:${context.packageName}")
+                                            )
+                                        )
+                                    }
                                 }
                             }
                         ) {
@@ -181,7 +191,8 @@ private enum class PermissionType {
     PostNotifications,
     Camera,
     WriteSettings,
-    NotificationPolicy
+    NotificationPolicy,
+    IgnoreBatteryOptimizations
 }
 
 private data class PermissionItem(
@@ -213,6 +224,9 @@ private fun buildPermissionItems(context: Context): List<PermissionItem> {
 
     val notificationPolicyGranted = notificationManager?.isNotificationPolicyAccessGranted == true
 
+    val powerManager = context.getSystemService(PowerManager::class.java)
+    val ignoreBatteryOptimizationsGranted = powerManager?.isIgnoringBatteryOptimizations(context.packageName) == true
+
     return listOf(
         PermissionItem(
             type = PermissionType.NotificationAccess,
@@ -243,6 +257,12 @@ private fun buildPermissionItems(context: Context): List<PermissionItem> {
             title = "Notification Policy Access",
             description = "Zil ve titreşim davranışını değiştirebilmek için",
             granted = notificationPolicyGranted
+        ),
+        PermissionItem(
+            type = PermissionType.IgnoreBatteryOptimizations,
+            title = "Run in Background",
+            description = "Hizmetin pil tasarrufu tarafından kapatılmasını önler",
+            granted = ignoreBatteryOptimizationsGranted
         )
     )
 }

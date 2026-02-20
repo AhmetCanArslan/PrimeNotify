@@ -29,13 +29,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.arslan.primenotify.service.isPrimeNotifyServiceEnabled
-import com.arslan.primenotify.service.setPrimeNotifyServiceEnabled
 import com.arslan.primenotify.ui.home.HomeScreen
 import com.arslan.primenotify.ui.permissions.PermissionsScreen
 
@@ -122,28 +120,12 @@ fun MainFlowScreen(rootNavController: NavController) {
 
     Scaffold(
         topBar = {
-            val permissionItems = com.arslan.primenotify.ui.home.buildPermissionItems(context)
-            val allPermissionsGranted = permissionItems.all { it.granted }
-            val primeNotifyServiceEnabled = isPrimeNotifyServiceEnabled(context)
-            
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = {
                     Text(
                         text = "PrimeNotify",
                         style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 16.dp)
-                    )
-                },
-                actions = {
-                    Switch(
-                        checked = primeNotifyServiceEnabled,
-                        onCheckedChange = {
-                            if (!allPermissionsGranted && it) return@Switch
-                            setPrimeNotifyServiceEnabled(context, it)
-                        },
-                        enabled = allPermissionsGranted || primeNotifyServiceEnabled,
-                        modifier = Modifier.padding(end = 32.dp)
+                        fontWeight = FontWeight.Bold
                     )
                 }
             )

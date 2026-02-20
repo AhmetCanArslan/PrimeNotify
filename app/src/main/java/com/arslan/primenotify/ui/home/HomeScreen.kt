@@ -44,11 +44,14 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import android.content.pm.PackageManager
+import androidx.compose.material3.Switch
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.compose.material3.Button
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import com.arslan.primenotify.service.isPrimeNotifyServiceEnabled
+import com.arslan.primenotify.service.setPrimeNotifyServiceEnabled
 import com.arslan.primenotify.ui.theme.PrimeNotifyTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,6 +85,8 @@ fun HomeScreen(
     var wakeUpScreenEnabled by rememberSaveable { mutableStateOf(false) }
     var aodEnabled by rememberSaveable { mutableStateOf(false) }
     
+    var isServiceActive by remember { mutableStateOf(isPrimeNotifyServiceEnabled(context)) }
+
     val coroutineScope = rememberCoroutineScope()
     var remainingSeconds by remember { mutableIntStateOf(0) }
 
@@ -90,8 +95,44 @@ fun HomeScreen(
             .fillMaxSize()
             .padding(horizontal = 16.dp, vertical = 12.dp)
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isServiceActive) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "PrimeNotify Service",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isServiceActive) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = if (isServiceActive) "Active" else "Disabled",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (isServiceActive) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                        )
+                    }
+                    Switch(
+                        checked = isServiceActive,
+                        onCheckedChange = { 
+                            isServiceActive = it
+                            setPrimeNotifyServiceEnabled(context, it)
+                        }
+                    )
+                }
+            }
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
