@@ -39,9 +39,12 @@ class PrimeNotifyListenerService : NotificationListenerService() {
         val activeRules = rulesManager.getFlashRules().filter { it.isEnabled }
         
         val matchedRule = activeRules.firstOrNull { rule ->
-            val isAppMatch = rule.packageName == packageName
-            val isKeywordMatch = searchBody.contains(rule.keyword.lowercase())
-            isAppMatch && isKeywordMatch
+            val isAppMatch = rule.packageNames.contains(packageName)
+            val isKeywordMatch = rule.keywords.isEmpty() || rule.keywords.any { kw ->
+                title.contains(kw, ignoreCase = true) || 
+                text.contains(kw, ignoreCase = true)
+            }
+            isAppMatch && isKeywordMatch && rule.isEnabled
         }
         
         if (matchedRule != null) {

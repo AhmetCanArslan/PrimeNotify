@@ -12,14 +12,17 @@ data class FlashRule(
     @SerializedName("id")
     val id: String = UUID.randomUUID().toString(),
     
-    @SerializedName("packageName")
-    val packageName: String,
+    @SerializedName("packageNames")
+    val packageNames: List<String>,
     
-    @SerializedName("appName")
-    val appName: String,
+    @SerializedName("appNames")
+    val appNames: List<String>,
     
     @SerializedName("keyword")
-    val keyword: String,
+    val keyword: String = "",
+    
+    @SerializedName("keywords")
+    val keywords: List<String> = emptyList(),
     
     @SerializedName("pattern")
     val pattern: FlashPattern,
