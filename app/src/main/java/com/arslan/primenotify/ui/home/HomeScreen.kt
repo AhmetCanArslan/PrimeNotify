@@ -318,13 +318,14 @@ fun buildPermissionItems(context: Context): List<PermissionItem> {
 }
 
 private fun sendTestNotification(context: Context) {
-    val channelId = "primenotify_test_channel"
+    val channelId = "primenotify_test_channel_popup"
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val name = "Test Notifications"
         val descriptionText = "Channel for test notifications"
         val importance = android.app.NotificationManager.IMPORTANCE_HIGH
         val channel = android.app.NotificationChannel(channelId, name, importance).apply {
             description = descriptionText
+            enableVibration(true)
         }
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
         notificationManager.createNotificationChannel(channel)
@@ -334,7 +335,9 @@ private fun sendTestNotification(context: Context) {
         .setSmallIcon(android.R.drawable.ic_dialog_info)
         .setContentTitle("PrimeNotify Test")
         .setContentText("This is a test notification to verify rules.")
-        .setPriority(NotificationCompat.PRIORITY_HIGH)
+        .setPriority(NotificationCompat.PRIORITY_MAX)
+        .setDefaults(NotificationCompat.DEFAULT_ALL)
+        .setAutoCancel(true)
 
     with(NotificationManagerCompat.from(context)) {
         try {
