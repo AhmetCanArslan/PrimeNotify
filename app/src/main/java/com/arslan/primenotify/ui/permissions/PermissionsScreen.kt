@@ -217,7 +217,7 @@ private fun buildPermissionItems(context: Context): List<PermissionItem> {
         PermissionItem(
             type = PermissionType.NotificationAccess,
             title = "Notification Access",
-            description = "Regex eşleşmesini algılamak için bildirim erişimi",
+            description = "Belirli bildirimleri algılamak için bildirim erişimi",
             granted = notificationAccessGranted
         ),
         PermissionItem(

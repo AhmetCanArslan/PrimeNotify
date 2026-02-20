@@ -2,8 +2,12 @@ package com.arslan.primenotify.navigation
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -21,10 +25,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -37,12 +42,82 @@ import com.arslan.primenotify.ui.permissions.PermissionsScreen
 sealed class Screen(val route: String, val label: String) {
     data object Home : Screen("home", "Home")
     data object Permissions : Screen("permissions", "Permissions")
+    data object FlashSettings : Screen("flash_settings", "Flash Settings")
+    data object WakeUpScreenSettings : Screen("wake_up_screen_settings", "Wake Up Screen Settings")
+    data object AODSettings : Screen("aod_settings", "AOD Settings")
+}
+
+@Composable
+fun AppNavigation() {
+    val rootNavController = rememberNavController()
+
+    NavHost(
+        navController = rootNavController,
+        startDestination = "main_flow",
+        modifier = Modifier.background(MaterialTheme.colorScheme.background)
+    ) {
+        composable(
+            route = "main_flow",
+            enterTransition = { fadeIn(animationSpec = tween(300)) },
+            exitTransition = { fadeOut(animationSpec = tween(300)) },
+            popEnterTransition = { fadeIn(animationSpec = tween(300)) },
+            popExitTransition = { fadeOut(animationSpec = tween(300)) }
+        ) {
+            MainFlowScreen(rootNavController)
+        }
+
+        composable(
+            route = Screen.FlashSettings.route,
+            enterTransition = { fadeIn(animationSpec = tween(300)) },
+            exitTransition = { fadeOut(animationSpec = tween(300)) },
+            popEnterTransition = { fadeIn(animationSpec = tween(300)) },
+            popExitTransition = { fadeOut(animationSpec = tween(300)) }
+        ) {
+            com.arslan.primenotify.ui.settings.FlashSettingsScreen(
+                onNavigateBack = {
+                    if (rootNavController.previousBackStackEntry != null) {
+                        rootNavController.popBackStack()
+                    }
+                }
+            )
+        }
+        composable(
+            route = Screen.WakeUpScreenSettings.route,
+            enterTransition = { fadeIn(animationSpec = tween(300)) },
+            exitTransition = { fadeOut(animationSpec = tween(300)) },
+            popEnterTransition = { fadeIn(animationSpec = tween(300)) },
+            popExitTransition = { fadeOut(animationSpec = tween(300)) }
+        ) {
+            com.arslan.primenotify.ui.settings.WakeUpScreenSettingsScreen(
+                onNavigateBack = {
+                    if (rootNavController.previousBackStackEntry != null) {
+                        rootNavController.popBackStack()
+                    }
+                }
+            )
+        }
+        composable(
+            route = Screen.AODSettings.route,
+            enterTransition = { fadeIn(animationSpec = tween(300)) },
+            exitTransition = { fadeOut(animationSpec = tween(300)) },
+            popEnterTransition = { fadeIn(animationSpec = tween(300)) },
+            popExitTransition = { fadeOut(animationSpec = tween(300)) }
+        ) {
+            com.arslan.primenotify.ui.settings.AODSettingsScreen(
+                onNavigateBack = {
+                    if (rootNavController.previousBackStackEntry != null) {
+                        rootNavController.popBackStack()
+                    }
+                }
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppNavigation() {
-    val navController = rememberNavController()
+fun MainFlowScreen(rootNavController: NavController) {
+    val bottomNavController = rememberNavController()
     val context = androidx.compose.ui.platform.LocalContext.current
 
     Scaffold(
@@ -75,7 +150,7 @@ fun AppNavigation() {
         },
         bottomBar = {
             NavigationBar {
-                val currentBackStackEntry = navController.currentBackStackEntryAsState()
+                val currentBackStackEntry = bottomNavController.currentBackStackEntryAsState()
                 val currentRoute = currentBackStackEntry.value?.destination?.route
 
                 NavigationBarItem(
@@ -83,8 +158,8 @@ fun AppNavigation() {
                     label = { Text("Home") },
                     selected = currentRoute == Screen.Home.route,
                     onClick = {
-                        navController.navigate(Screen.Home.route) {
-                            popUpTo(navController.graph.startDestinationId) {
+                        bottomNavController.navigate(Screen.Home.route) {
+                            popUpTo(bottomNavController.graph.startDestinationId) {
                                 saveState = true
                             }
                             restoreState = true
@@ -97,8 +172,8 @@ fun AppNavigation() {
                     label = { Text("Permissions") },
                     selected = currentRoute == Screen.Permissions.route,
                     onClick = {
-                        navController.navigate(Screen.Permissions.route) {
-                            popUpTo(navController.graph.startDestinationId) {
+                        bottomNavController.navigate(Screen.Permissions.route) {
+                            popUpTo(bottomNavController.graph.startDestinationId) {
                                 saveState = true
                             }
                             restoreState = true
@@ -109,7 +184,7 @@ fun AppNavigation() {
         }
     ) { innerPadding ->
         NavHost(
-            navController = navController,
+            navController = bottomNavController,
             startDestination = Screen.Home.route,
             modifier = Modifier.padding(innerPadding).padding(top = 8.dp)
         ) {
@@ -120,7 +195,11 @@ fun AppNavigation() {
                 popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }) },
                 popExitTransition = { slideOutHorizontally(targetOffsetX = { -it }) }
             ) {
-                HomeScreen()
+                HomeScreen(
+                    onNavigateToFlashSettings = { rootNavController.navigate(Screen.FlashSettings.route) },
+                    onNavigateToWakeUpScreenSettings = { rootNavController.navigate(Screen.WakeUpScreenSettings.route) },
+                    onNavigateToAODSettings = { rootNavController.navigate(Screen.AODSettings.route) }
+                )
             }
             composable(
                 route = Screen.Permissions.route,

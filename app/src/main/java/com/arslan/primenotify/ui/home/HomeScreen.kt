@@ -47,7 +47,12 @@ import com.arslan.primenotify.ui.theme.PrimeNotifyTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
+fun HomeScreen(
+    modifier: Modifier = Modifier,
+    onNavigateToFlashSettings: () -> Unit = {},
+    onNavigateToWakeUpScreenSettings: () -> Unit = {},
+    onNavigateToAODSettings: () -> Unit = {}
+) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var refreshState by remember { mutableIntStateOf(0) }
@@ -67,7 +72,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
     val permissionItems = remember(refreshState) { buildPermissionItems(context) }
     val allPermissionsGranted = permissionItems.all { it.granted }
 
-    var regexFlashEnabled by rememberSaveable { mutableStateOf(false) }
+    var flashEnabled by rememberSaveable { mutableStateOf(false) }
     var wakeUpScreenEnabled by rememberSaveable { mutableStateOf(false) }
     var aodEnabled by rememberSaveable { mutableStateOf(false) }
 
@@ -87,27 +92,27 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     RuleRow(
-                        title = "Regex Flash Pattern",
+                        title = "Flash Pattern",
                         description = "Bildirim metnine göre özel flaş deseni",
-                        checked = regexFlashEnabled,
-                        onCheckedChange = { regexFlashEnabled = it },
-                        onSettingsClick = { /* TODO: Open Regex Flash Settings */ }
+                        checked = flashEnabled,
+                        onCheckedChange = { flashEnabled = it },
+                        onSettingsClick = onNavigateToFlashSettings
                     )
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                     RuleRow(
                         title = "Wake Up Screen",
                         description = "Eşleşen bildirimi alınca ekranı uyandır",
                         checked = wakeUpScreenEnabled,
                         onCheckedChange = { wakeUpScreenEnabled = it },
-                        onSettingsClick = { /* TODO: Open Wake Up Screen Settings */ }
+                        onSettingsClick = onNavigateToWakeUpScreenSettings
                     )
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                     RuleRow(
                         title = "Turn On AOD",
                         description = "Ekran kapalıysa AOD görünümünü aç",
                         checked = aodEnabled,
                         onCheckedChange = { aodEnabled = it },
-                        onSettingsClick = { /* TODO: Open AOD Settings */ }
+                        onSettingsClick = onNavigateToAODSettings
                     )
                 }
             }
@@ -123,7 +128,7 @@ private fun RuleRow(
     onSettingsClick: () -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -134,12 +139,12 @@ private fun RuleRow(
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Medium
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
             )
             Text(
                 text = description,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
@@ -221,7 +226,7 @@ fun buildPermissionItems(context: Context): List<PermissionItem> {
         PermissionItem(
             type = PermissionType.NotificationAccess,
             title = "Notification Access",
-            description = "Regex eşleşmesini algılamak için bildirim erişimi",
+            description = "Belirli bildirimleri algılamak için bildirim erişimi",
             granted = notificationAccessGranted
         ),
         PermissionItem(
