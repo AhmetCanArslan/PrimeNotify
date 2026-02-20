@@ -38,13 +38,12 @@ import com.arslan.primenotify.data.RulesManager
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FlashSettingsScreen(
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToAddEditRule: (String?) -> Unit
 ) {
     val context = LocalContext.current
     val rulesManager = remember { RulesManager(context) }
     var rules by remember { mutableStateOf(rulesManager.getFlashRules()) }
-    var showAddDialog by remember { mutableStateOf(false) }
-    var editingRule by remember { mutableStateOf<FlashRule?>(null) }
 
     Scaffold(
         topBar = {
@@ -62,8 +61,7 @@ fun FlashSettingsScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { 
-                editingRule = null
-                showAddDialog = true 
+                onNavigateToAddEditRule(null)
             }) {
                 Icon(Icons.Default.Add, contentDescription = "Add Rule")
             }
@@ -107,8 +105,7 @@ fun FlashSettingsScreen(
                                 rules = rulesManager.getFlashRules()
                             },
                             onEdit = {
-                                editingRule = rule
-                                showAddDialog = true
+                                onNavigateToAddEditRule(rule.id)
                             },
                             onDelete = {
                                 rulesManager.removeFlashRule(rule.id)
@@ -119,28 +116,6 @@ fun FlashSettingsScreen(
                 }
             }
         }
-    }
-
-    if (showAddDialog) {
-        val installedApps = remember { getInstalledApps(context) }
-        AddFlashRuleDialog(
-            apps = installedApps,
-            initialRule = editingRule,
-            onDismiss = { 
-                editingRule = null
-                showAddDialog = false 
-            },
-            onSave = { newRule ->
-                if (editingRule != null) {
-                    rulesManager.updateFlashRule(newRule)
-                } else {
-                    rulesManager.addFlashRule(newRule)
-                }
-                rules = rulesManager.getFlashRules()
-                editingRule = null
-                showAddDialog = false
-            }
-        )
     }
 }
 
@@ -206,217 +181,7 @@ fun RuleCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AddFlashRuleDialog(
-    apps: List<AppItem>,
-    initialRule: FlashRule? = null,
-    onDismiss: () -> Unit,
-    onSave: (FlashRule) -> Unit
-) {
-    var selectedApps by remember(initialRule, apps) { 
-        mutableStateOf(
-            if (initialRule != null) apps.filter { initialRule.packageNames.contains(it.packageName) }
-            else emptyList()
-        ) 
-    }
-    var keywords by remember(initialRule) { mutableStateOf(initialRule?.keywords ?: emptyList()) }
-    var currentKeyword by remember { mutableStateOf("") }
-    var selectedPattern by remember(initialRule) { mutableStateOf(initialRule?.pattern ?: FlashPattern.HEARTBEAT) }
-    var expandedPatterns by remember { mutableStateOf(false) }
 
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.9f)
-                .padding(16.dp),
-            shape = MaterialTheme.shapes.extraLarge,
-            color = MaterialTheme.colorScheme.surface
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Header
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = if (initialRule != null) "Edit Rule" else "Create Rule",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TextButton(onClick = onDismiss) {
-                            Text("Cancel")
-                        }
-                        Button(
-                            onClick = {
-                                if (selectedApps.isNotEmpty()) {
-                                    val newRule = initialRule?.copy(
-                                        packageNames = selectedApps.map { it.packageName },
-                                        appNames = selectedApps.map { it.name },
-                                        keyword = "",
-                                        keywords = keywords,
-                                        pattern = selectedPattern
-                                    ) ?: FlashRule(
-                                        packageNames = selectedApps.map { it.packageName },
-                                        appNames = selectedApps.map { it.name },
-                                        keyword = "",
-                                        keywords = keywords,
-                                        pattern = selectedPattern
-                                    )
-                                    onSave(newRule)
-                                }
-                            },
-                            enabled = selectedApps.isNotEmpty()
-                        ) {
-                            Text("Save")
-                        }
-                    }
-                }
-
-                // Keywords List
-                if (keywords.isNotEmpty()) {
-                    androidx.compose.foundation.lazy.LazyRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(keywords) { kw ->
-                            AssistChip(
-                                onClick = { keywords = keywords - kw },
-                                label = { Text(kw) },
-                                trailingIcon = { Icon(Icons.Default.Close, contentDescription = "Remove") }
-                            )
-                        }
-                    }
-                }
-
-                // Keyword and Pattern
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = currentKeyword,
-                        onValueChange = { currentKeyword = it },
-                        label = { Text("Add Keyword") },
-                        modifier = Modifier.weight(1f),
-                        trailingIcon = {
-                            IconButton(
-                                onClick = {
-                                    val kw = currentKeyword.trim()
-                                    if (kw.isNotBlank() && !keywords.contains(kw)) {
-                                        keywords = keywords + kw
-                                        currentKeyword = ""
-                                    }
-                                },
-                                enabled = currentKeyword.isNotBlank()
-                            ) {
-                                Icon(Icons.Default.Add, contentDescription = "Add Keyword")
-                            }
-                        }
-                    )
-                    
-                    Box(modifier = Modifier.weight(1f)) {
-                        ExposedDropdownMenuBox(
-                            expanded = expandedPatterns,
-                            onExpandedChange = { expandedPatterns = it },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            OutlinedTextField(
-                                value = selectedPattern.displayName,
-                                onValueChange = {},
-                                readOnly = true,
-                                label = { Text("Pattern") },
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPatterns) },
-                                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true).fillMaxWidth()
-                            )
-                            ExposedDropdownMenu(
-                                expanded = expandedPatterns,
-                                onDismissRequest = { expandedPatterns = false }
-                            ) {
-                                FlashPattern.entries.forEach { pattern ->
-                                    DropdownMenuItem(
-                                        text = { Text(pattern.displayName) },
-                                        onClick = {
-                                            selectedPattern = pattern
-                                            expandedPatterns = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                HorizontalDivider()
-
-                // Apps Table
-                Row(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                    val unselectedApps = apps.filter { it !in selectedApps }
-                    
-                    // Left Column
-                    Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                        Text("Apps", fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 8.dp))
-                        LazyColumn(modifier = Modifier.weight(1f)) {
-                            items(unselectedApps, key = { it.packageName }) { app ->
-                                AppRow(
-                                    app = app, 
-                                    actionIcon = Icons.Default.Add,
-                                    onClick = { selectedApps = selectedApps + app }
-                                )
-                            }
-                        }
-                    }
-                    
-                    Spacer(modifier = Modifier.width(16.dp))
-                    VerticalDivider()
-                    Spacer(modifier = Modifier.width(16.dp))
-                    
-                    // Right Column
-                    Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("Chosen", fontWeight = FontWeight.SemiBold)
-                            IconButton(
-                                onClick = { selectedApps = apps.filter { it !in selectedApps } },
-                                modifier = Modifier.size(24.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Refresh,
-                                    contentDescription = "Swap Apps",
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                        LazyColumn(modifier = Modifier.weight(1f)) {
-                            items(selectedApps, key = { it.packageName }) { app ->
-                                AppRow(
-                                    app = app, 
-                                    actionIcon = Icons.Default.Check,
-                                    onClick = { selectedApps = selectedApps - app }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun AppRow(
