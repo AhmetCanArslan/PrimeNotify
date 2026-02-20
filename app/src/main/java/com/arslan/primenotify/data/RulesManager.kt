@@ -12,6 +12,7 @@ class RulesManager(context: Context) {
     private val gson = Gson()
     
     private val FLASH_RULES_KEY = "flash_rules_list"
+    private val CUSTOM_PATTERNS_KEY = "custom_patterns_list"
     
     fun getFlashRules(): List<FlashRule> {
         val json = prefs.getString(FLASH_RULES_KEY, null) ?: return emptyList()
@@ -49,8 +50,10 @@ class RulesManager(context: Context) {
                 val patternStr = obj.optString("pattern", "HEARTBEAT")
                 val pattern = try { FlashPattern.valueOf(patternStr) } catch (e: Exception) { FlashPattern.HEARTBEAT }
                 val isEnabled = obj.optBoolean("isEnabled", true)
+                val customPatternStr = obj.optString("customPatternId", "")
+                val customPatternId = if (customPatternStr.isNotEmpty()) customPatternStr else null
                 
-                cleanRules.add(FlashRule(id, packageNames, appNames, keyword, keywords, pattern, isEnabled))
+                cleanRules.add(FlashRule(id, packageNames, appNames, keyword, keywords, pattern, customPatternId, isEnabled))
             }
             cleanRules
         } catch (e: Exception) {
@@ -91,5 +94,28 @@ class RulesManager(context: Context) {
             currentRules[index] = updatedRule
             saveFlashRules(currentRules)
         }
+    }
+    
+    fun getCustomPatterns(): List<CustomPattern> {
+        val json = prefs.getString(CUSTOM_PATTERNS_KEY, null) ?: return emptyList()
+        return try {
+            val listType = object : TypeToken<List<CustomPattern>>() {}.type
+            gson.fromJson<List<CustomPattern>>(json, listType) ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+    
+    fun saveCustomPattern(pattern: CustomPattern) {
+        val current = getCustomPatterns().toMutableList()
+        val index = current.indexOfFirst { it.id == pattern.id }
+        if (index != -1) current[index] = pattern else current.add(pattern)
+        prefs.edit().putString(CUSTOM_PATTERNS_KEY, gson.toJson(current)).apply()
+    }
+    
+    fun removeCustomPattern(id: String) {
+        val current = getCustomPatterns().toMutableList()
+        current.removeAll { it.id == id }
+        prefs.edit().putString(CUSTOM_PATTERNS_KEY, gson.toJson(current)).apply()
     }
 }

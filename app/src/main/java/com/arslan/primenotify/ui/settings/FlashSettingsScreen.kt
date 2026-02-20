@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.arslan.primenotify.data.CustomPattern
 import com.arslan.primenotify.data.FlashPattern
 import com.arslan.primenotify.data.FlashRule
 import com.arslan.primenotify.data.RulesManager
@@ -39,11 +40,16 @@ import com.arslan.primenotify.data.RulesManager
 @Composable
 fun FlashSettingsScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToAddEditRule: (String?) -> Unit
+    onNavigateToAddEditRule: (String?) -> Unit,
+    onNavigateToCreatePattern: () -> Unit
 ) {
     val context = LocalContext.current
     val rulesManager = remember { RulesManager(context) }
     var rules by remember { mutableStateOf(rulesManager.getFlashRules()) }
+    var customPatterns by remember { mutableStateOf(rulesManager.getCustomPatterns()) }
+
+    var ruleToDelete by remember { mutableStateOf<FlashRule?>(null) }
+    var patternToDelete by remember { mutableStateOf<CustomPattern?>(null) }
 
     Scaffold(
         topBar = {
@@ -73,33 +79,77 @@ fun FlashSettingsScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp)
         ) {
-            Text(
-                text = "Rules",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 12.dp)
-            )
 
-            if (rules.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(bottom = 80.dp)
+            ) {
+                // Patterns section
+                item {
                     Text(
-                        text = "No rules configured.\nTap + to add a new rule.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        text = "Custom Patterns",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(vertical = 8.dp)
                     )
                 }
-            } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(bottom = 80.dp)
-                ) {
+
+                items(customPatterns, key = { it.id }) { pattern ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth().animateItem(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(pattern.name, style = MaterialTheme.typography.titleMedium)
+                            IconButton(onClick = {
+                                patternToDelete = pattern
+                            }) {
+                                Icon(Icons.Default.Delete, contentDescription = "Delete Pattern", tint = MaterialTheme.colorScheme.error)
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Button(
+                        onClick = onNavigateToCreatePattern,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Create Custom Pattern")
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Rules",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
+                if (rules.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No rules configured.\nTap + to add a new rule.",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+                    }
+                } else {
                     items(rules, key = { it.id }) { rule ->
                         RuleCard(
                             rule = rule,
+                            modifier = Modifier.animateItem(),
                             onToggle = { isEnabled ->
                                 rulesManager.toggleFlashRule(rule.id, isEnabled)
                                 rules = rulesManager.getFlashRules()
@@ -108,8 +158,7 @@ fun FlashSettingsScreen(
                                 onNavigateToAddEditRule(rule.id)
                             },
                             onDelete = {
-                                rulesManager.removeFlashRule(rule.id)
-                                rules = rulesManager.getFlashRules()
+                                ruleToDelete = rule
                             }
                         )
                     }
@@ -117,17 +166,82 @@ fun FlashSettingsScreen(
             }
         }
     }
+
+    if (ruleToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { ruleToDelete = null },
+            title = { Text("Delete Rule") },
+            text = { Text("Are you sure you want to delete this rule?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val toDelete = ruleToDelete
+                        if (toDelete != null) {
+                            rulesManager.removeFlashRule(toDelete.id)
+                            rules = rulesManager.getFlashRules()
+                        }
+                        ruleToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { ruleToDelete = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    if (patternToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { patternToDelete = null },
+            title = { Text("Delete Pattern") },
+            text = { Text("Are you sure you want to delete pattern '${patternToDelete?.name}'?\nAny rules using it will reset to default.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val toDelete = patternToDelete
+                        if (toDelete != null) {
+                            rulesManager.removeCustomPattern(toDelete.id)
+                            customPatterns = rulesManager.getCustomPatterns()
+                            
+                            val currentRules = rulesManager.getFlashRules()
+                            currentRules.filter { it.customPatternId == toDelete.id }.forEach {
+                                rulesManager.updateFlashRule(it.copy(customPatternId = null))
+                            }
+                            rules = rulesManager.getFlashRules()
+                        }
+                        patternToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { patternToDelete = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
 @Composable
 fun RuleCard(
     rule: FlashRule,
+    modifier: Modifier = Modifier,
     onToggle: (Boolean) -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val context = LocalContext.current
+    val rulesManager = remember { RulesManager(context) }
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         )
@@ -151,7 +265,10 @@ fun RuleCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "Pattern: ${rule.pattern.displayName}",
+                    text = if (rule.customPatternId != null) {
+                        val cPattern = rulesManager.getCustomPatterns().find { it.id == rule.customPatternId }
+                        "Pattern: ${cPattern?.name ?: "Unknown"}"
+                    } else "Pattern: ${rule.pattern.displayName}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(top = 4.dp)

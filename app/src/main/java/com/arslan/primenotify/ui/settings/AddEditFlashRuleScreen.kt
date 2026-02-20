@@ -68,7 +68,11 @@ fun AddEditFlashRuleScreen(
     
     var keywords by remember(initialRule) { mutableStateOf(initialRule?.keywords ?: emptyList()) }
     var currentKeyword by remember { mutableStateOf("") }
-    var selectedPattern by remember(initialRule) { mutableStateOf(initialRule?.pattern ?: FlashPattern.HEARTBEAT) }
+    
+    val customPatterns = remember { rulesManager.getCustomPatterns() }
+    var selectedStandardPattern by remember(initialRule) { mutableStateOf(initialRule?.pattern ?: FlashPattern.HEARTBEAT) }
+    var selectedCustomPatternId by remember(initialRule) { mutableStateOf(initialRule?.customPatternId) }
+    
     var expandedPatterns by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -92,13 +96,15 @@ fun AddEditFlashRuleScreen(
                                     appNames = selectedApps.map { it.name },
                                     keyword = "",
                                     keywords = keywords,
-                                    pattern = selectedPattern
+                                    pattern = selectedStandardPattern,
+                                    customPatternId = selectedCustomPatternId
                                 ) ?: FlashRule(
                                     packageNames = selectedApps.map { it.packageName },
                                     appNames = selectedApps.map { it.name },
                                     keyword = "",
                                     keywords = keywords,
-                                    pattern = selectedPattern
+                                    pattern = selectedStandardPattern,
+                                    customPatternId = selectedCustomPatternId
                                 )
                                 
                                 if (initialRule != null) {
@@ -215,7 +221,11 @@ fun AddEditFlashRuleScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         OutlinedTextField(
-                            value = selectedPattern.displayName,
+                            value = if (selectedCustomPatternId != null) {
+                                customPatterns.find { it.id == selectedCustomPatternId }?.name ?: "Unknown Custom"
+                            } else {
+                                selectedStandardPattern.displayName
+                            },
                             onValueChange = {},
                             readOnly = true,
                             label = { Text("Select Pattern") },
@@ -230,10 +240,23 @@ fun AddEditFlashRuleScreen(
                                 DropdownMenuItem(
                                     text = { Text(pattern.displayName) },
                                     onClick = {
-                                        selectedPattern = pattern
+                                        selectedStandardPattern = pattern
+                                        selectedCustomPatternId = null
                                         expandedPatterns = false
                                     }
                                 )
+                            }
+                            if (customPatterns.isNotEmpty()) {
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                                customPatterns.forEach { cPattern ->
+                                    DropdownMenuItem(
+                                        text = { Text(cPattern.name) },
+                                        onClick = {
+                                            selectedCustomPatternId = cPattern.id
+                                            expandedPatterns = false
+                                        }
+                                    )
+                                }
                             }
                         }
                     }

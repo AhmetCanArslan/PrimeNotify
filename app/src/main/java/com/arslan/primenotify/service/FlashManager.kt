@@ -41,6 +41,34 @@ class FlashManager(context: Context) {
             }
         }
     }
+
+    fun executeCustomPattern(intervals: List<Long>) {
+        if (cameraId == null || intervals.isEmpty()) return
+        
+        flashJob?.cancel()
+        flashJob = scope.launch {
+            try {
+                // intervals is like vibration: [delay, on, delay, on, ...]
+                for (i in intervals.indices) {
+                    val duration = intervals[i]
+                    if (duration > 0) {
+                        if (i % 2 == 0) {
+                            turnOffFlash()
+                            delay(duration)
+                        } else {
+                            turnOnFlash()
+                            delay(duration)
+                            turnOffFlash()
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                // Ignore
+            } finally {
+                turnOffFlash()
+            }
+        }
+    }
     
     private suspend fun performHeartbeat() {
         repeat(3) { // 3 cycles
@@ -75,7 +103,7 @@ class FlashManager(context: Context) {
         }
     }
     
-    private fun turnOnFlash() {
+    fun turnOnFlash() {
         cameraId?.let { 
             try {
                 cameraManager.setTorchMode(it, true)
@@ -83,7 +111,7 @@ class FlashManager(context: Context) {
         }
     }
     
-    private fun turnOffFlash() {
+    fun turnOffFlash() {
         cameraId?.let { 
             try {
                 cameraManager.setTorchMode(it, false)

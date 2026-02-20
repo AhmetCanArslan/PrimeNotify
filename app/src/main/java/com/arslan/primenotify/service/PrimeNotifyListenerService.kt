@@ -48,7 +48,14 @@ class PrimeNotifyListenerService : NotificationListenerService() {
         }
         
         if (matchedRule != null) {
-            flashManager.executePattern(matchedRule.pattern)
+            val customPattern = matchedRule.customPatternId?.let { id ->
+                rulesManager.getCustomPatterns().find { it.id == id }
+            }
+            if (customPattern != null) {
+                flashManager.executeCustomPattern(customPattern.intervals)
+            } else {
+                flashManager.executePattern(matchedRule.pattern)
+            }
         }
         
         super.onNotificationPosted(sbn)

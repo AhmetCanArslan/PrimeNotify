@@ -27,6 +27,9 @@ data class FlashRule(
     @SerializedName("pattern")
     val pattern: FlashPattern,
     
+    @SerializedName("customPatternId")
+    val customPatternId: String? = null,
+    
     @SerializedName("isEnabled")
     var isEnabled: Boolean = true
 ) : Parcelable
