@@ -192,12 +192,21 @@ fun AppRow(
 ) {
     val context = LocalContext.current
     val pm = context.packageManager
-    val iconBitmap = remember(app.packageName) {
-        try {
-            val drawable = pm.getApplicationIcon(app.packageName)
-            drawableToImageBitmap(drawable)
-        } catch (e: Exception) {
-            null
+    val iconBitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(
+        initialValue = IconCache.get(app.packageName),
+        key1 = app.packageName
+    ) {
+        if (value == null) {
+            value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                try {
+                    val drawable = pm.getApplicationIcon(app.packageName)
+                    val bitmap = drawableToImageBitmap(drawable)
+                    IconCache.put(app.packageName, bitmap)
+                    bitmap
+                } catch (e: Exception) {
+                    null
+                }
+            }
         }
     }
 
@@ -209,9 +218,10 @@ fun AppRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        if (iconBitmap != null) {
+        val currentIcon = iconBitmap
+        if (currentIcon != null) {
             Image(
-                bitmap = iconBitmap,
+                bitmap = currentIcon,
                 contentDescription = app.name,
                 modifier = Modifier.size(24.dp)
             )
@@ -263,4 +273,16 @@ fun getInstalledApps(context: Context): List<AppItem> {
             )
         }
         .sortedBy { it.name.lowercase() }
+}
+
+object IconCache {
+    private val cache = android.util.LruCache<String, androidx.compose.ui.graphics.ImageBitmap>(150)
+
+    fun get(packageName: String): androidx.compose.ui.graphics.ImageBitmap? {
+        return cache.get(packageName)
+    }
+
+    fun put(packageName: String, bitmap: androidx.compose.ui.graphics.ImageBitmap) {
+        cache.put(packageName, bitmap)
+    }
 }
