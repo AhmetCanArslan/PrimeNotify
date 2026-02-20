@@ -64,13 +64,6 @@ fun FlashSettingsScreen(
                     }
                 }
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { 
-                onNavigateToAddEditRule(null)
-            }) {
-                Icon(Icons.Default.Add, contentDescription = "Add Rule")
-            }
         }
     ) { innerPadding ->
         Column(
@@ -85,8 +78,61 @@ fun FlashSettingsScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(bottom = 80.dp)
             ) {
+                // Rules section
+                item {
+                    Text(
+                        text = "Rules",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+
+                if (rules.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No rules configured.\nTap + to add a new rule.",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+                    }
+                } else {
+                    items(rules, key = { it.id }) { rule ->
+                        RuleCard(
+                            rule = rule,
+                            modifier = Modifier.animateItem(),
+                            onToggle = { isEnabled ->
+                                rulesManager.toggleFlashRule(rule.id, isEnabled)
+                                rules = rulesManager.getFlashRules()
+                            },
+                            onEdit = {
+                                onNavigateToAddEditRule(rule.id)
+                            },
+                            onDelete = {
+                                ruleToDelete = rule
+                            }
+                        )
+                    }
+                }
+
+                item {
+                    Button(
+                        onClick = { onNavigateToAddEditRule(null) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Add New Rule")
+                    }
+                }
+
                 // Patterns section
                 item {
+                    Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = "Custom Patterns",
                         style = MaterialTheme.typography.titleMedium,
@@ -121,46 +167,6 @@ fun FlashSettingsScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("Create Custom Pattern")
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Rules",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-                }
-
-                if (rules.isEmpty()) {
-                    item {
-                        Box(
-                            modifier = Modifier.fillMaxWidth().padding(32.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "No rules configured.\nTap + to add a new rule.",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                        }
-                    }
-                } else {
-                    items(rules, key = { it.id }) { rule ->
-                        RuleCard(
-                            rule = rule,
-                            modifier = Modifier.animateItem(),
-                            onToggle = { isEnabled ->
-                                rulesManager.toggleFlashRule(rule.id, isEnabled)
-                                rules = rulesManager.getFlashRules()
-                            },
-                            onEdit = {
-                                onNavigateToAddEditRule(rule.id)
-                            },
-                            onDelete = {
-                                ruleToDelete = rule
-                            }
-                        )
                     }
                 }
             }
