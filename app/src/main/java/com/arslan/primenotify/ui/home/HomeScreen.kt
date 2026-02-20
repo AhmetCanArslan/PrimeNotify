@@ -30,10 +30,12 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.launch
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -42,7 +44,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import android.content.pm.PackageManager
+import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import com.arslan.primenotify.ui.theme.PrimeNotifyTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,6 +81,9 @@ fun HomeScreen(
     var flashEnabled by rememberSaveable { mutableStateOf(false) }
     var wakeUpScreenEnabled by rememberSaveable { mutableStateOf(false) }
     var aodEnabled by rememberSaveable { mutableStateOf(false) }
+    
+    val coroutineScope = rememberCoroutineScope()
+    var remainingSeconds by remember { mutableIntStateOf(0) }
 
     Column(
         modifier = modifier
@@ -115,6 +124,40 @@ fun HomeScreen(
                         onSettingsClick = onNavigateToAODSettings
                     )
                 }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = {
+                    if (remainingSeconds == 0) {
+                        coroutineScope.launch {
+                            remainingSeconds = 7
+                            while (remainingSeconds > 0) {
+                                kotlinx.coroutines.delay(1000)
+                                remainingSeconds--
+                            }
+                            sendTestNotification(context)
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = remainingSeconds == 0
+            ) {
+                Text("Send Test Notification")
+            }
+
+            if (remainingSeconds > 0) {
+                Text(
+                    text = "Sending in $remainingSeconds seconds...",
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(top = 8.dp, bottom = 24.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }
@@ -272,4 +315,32 @@ fun buildPermissionItems(context: Context): List<PermissionItem> {
             granted = true
         )
     )
+}
+
+private fun sendTestNotification(context: Context) {
+    val channelId = "primenotify_test_channel"
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val name = "Test Notifications"
+        val descriptionText = "Channel for test notifications"
+        val importance = android.app.NotificationManager.IMPORTANCE_HIGH
+        val channel = android.app.NotificationChannel(channelId, name, importance).apply {
+            description = descriptionText
+        }
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+        notificationManager.createNotificationChannel(channel)
+    }
+
+    val builder = NotificationCompat.Builder(context, channelId)
+        .setSmallIcon(android.R.drawable.ic_dialog_info)
+        .setContentTitle("PrimeNotify Test")
+        .setContentText("This is a test notification to verify rules.")
+        .setPriority(NotificationCompat.PRIORITY_HIGH)
+
+    with(NotificationManagerCompat.from(context)) {
+        try {
+            notify(1001, builder.build())
+        } catch (e: SecurityException) {
+            // Missing POST_NOTIFICATIONS permission
+        }
+    }
 }
