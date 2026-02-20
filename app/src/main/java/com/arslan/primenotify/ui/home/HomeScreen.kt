@@ -173,7 +173,7 @@ fun HomeScreen(
                 onClick = {
                     if (remainingSeconds == 0) {
                         coroutineScope.launch {
-                            remainingSeconds = 7
+                            remainingSeconds = 4
                             while (remainingSeconds > 0) {
                                 kotlinx.coroutines.delay(1000)
                                 remainingSeconds--
