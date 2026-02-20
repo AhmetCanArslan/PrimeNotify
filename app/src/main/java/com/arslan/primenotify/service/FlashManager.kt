@@ -48,18 +48,21 @@ class FlashManager(context: Context) {
         flashJob?.cancel()
         flashJob = scope.launch {
             try {
-                // intervals is like vibration: [delay, on, delay, on, ...]
+                // intervals: [off_ms, on_ms, off_ms, on_ms, ...]
+                // Use absolute timing to prevent IPC latency drift
+                val startTime = System.currentTimeMillis()
+                var targetElapsed = 0L
+                
                 for (i in intervals.indices) {
-                    val duration = intervals[i]
-                    if (duration > 0) {
-                        if (i % 2 == 0) {
-                            turnOffFlash()
-                            delay(duration)
-                        } else {
-                            turnOnFlash()
-                            delay(duration)
-                            turnOffFlash()
-                        }
+                    if (i % 2 == 0) {
+                        turnOffFlash()
+                    } else {
+                        turnOnFlash()
+                    }
+                    targetElapsed += intervals[i]
+                    val remaining = (startTime + targetElapsed) - System.currentTimeMillis()
+                    if (remaining > 0) {
+                        delay(remaining)
                     }
                 }
             } catch (e: Exception) {
