@@ -30,7 +30,7 @@ class PrimeNotifyListenerService : NotificationListenerService() {
         val extras = sbn.notification.extras
         
         // Grab the title and content text to search for the keyword
-        val title = extras.getString(Notification.EXTRA_TITLE) ?: ""
+        val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
         val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
         val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString() ?: ""
         
@@ -41,8 +41,7 @@ class PrimeNotifyListenerService : NotificationListenerService() {
         val matchedRule = activeRules.firstOrNull { rule ->
             val isAppMatch = rule.packageNames.contains(packageName)
             val isKeywordMatch = rule.keywords.isEmpty() || rule.keywords.any { kw ->
-                title.contains(kw, ignoreCase = true) || 
-                text.contains(kw, ignoreCase = true)
+                searchBody.contains(kw.lowercase())
             }
             isAppMatch && isKeywordMatch && rule.isEnabled
         }
