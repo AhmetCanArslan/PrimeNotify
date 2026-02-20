@@ -17,9 +17,14 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -85,25 +90,28 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 )
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    ToggleRow(
+                    RuleRow(
                         title = "Regex Flash Pattern",
                         description = "Bildirim metnine göre özel flaş deseni",
                         checked = regexFlashEnabled,
-                        onCheckedChange = { regexFlashEnabled = it }
+                        onCheckedChange = { regexFlashEnabled = it },
+                        onSettingsClick = { /* TODO: Open Regex Flash Settings */ }
                     )
                     HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
-                    ToggleRow(
+                    RuleRow(
                         title = "Wake Up Screen",
                         description = "Eşleşen bildirimi alınca ekranı uyandır",
                         checked = wakeUpScreenEnabled,
-                        onCheckedChange = { wakeUpScreenEnabled = it }
+                        onCheckedChange = { wakeUpScreenEnabled = it },
+                        onSettingsClick = { /* TODO: Open Wake Up Screen Settings */ }
                     )
                     HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
-                    ToggleRow(
+                    RuleRow(
                         title = "Turn On AOD",
                         description = "Ekran kapalıysa AOD görünümünü aç",
                         checked = aodEnabled,
-                        onCheckedChange = { aodEnabled = it }
+                        onCheckedChange = { aodEnabled = it },
+                        onSettingsClick = { /* TODO: Open AOD Settings */ }
                     )
                 }
             }
@@ -156,11 +164,12 @@ fun HomeScreen(modifier: Modifier = Modifier) {
     }
 
 @Composable
-private fun ToggleRow(
+private fun RuleRow(
     title: String,
     description: String,
     checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    onSettingsClick: () -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -184,14 +193,28 @@ private fun ToggleRow(
             )
         }
 
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colorScheme.primary,
-                checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
-            )
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            IconButton(onClick = onSettingsClick) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "Settings for $title",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            IconToggleButton(
+                checked = checked,
+                onCheckedChange = onCheckedChange
+            ) {
+                Icon(
+                    imageVector = if (checked) Icons.Rounded.CheckCircle else Icons.Outlined.CheckCircle,
+                    contentDescription = if (checked) "Uncheck $title" else "Check $title",
+                    tint = if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
     }
 }
 
