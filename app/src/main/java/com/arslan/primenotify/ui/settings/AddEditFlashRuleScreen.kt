@@ -58,7 +58,11 @@ fun AddEditFlashRuleScreen(
         } else null
     }
 
-    val installedApps = remember { getInstalledApps(context) }
+    val installedApps by produceState<List<AppItem>>(initialValue = emptyList()) {
+        value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            getInstalledApps(context)
+        }
+    }
     var selectedApps by remember(initialRule, installedApps) { 
         mutableStateOf(
             if (initialRule != null) installedApps.filter { initialRule.packageNames.contains(it.packageName) }
@@ -72,6 +76,7 @@ fun AddEditFlashRuleScreen(
     val customPatterns = remember { rulesManager.getCustomPatterns() }
     var selectedStandardPattern by remember(initialRule) { mutableStateOf(initialRule?.pattern ?: FlashPattern.HEARTBEAT) }
     var selectedCustomPatternId by remember(initialRule) { mutableStateOf(initialRule?.customPatternId) }
+    val isLoadingApps = installedApps.isEmpty()
     
     var expandedPatterns by remember { mutableStateOf(false) }
 
@@ -276,6 +281,14 @@ fun AddEditFlashRuleScreen(
                 ) {
                     Text("Target Apps", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     
+                    if (isLoadingApps) {
+                        Box(
+                            modifier = Modifier.weight(1f).fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    } else {
                     Row(modifier = Modifier.weight(1f).fillMaxWidth()) {
                         val unselectedApps = installedApps.filter { it !in selectedApps }
                         
@@ -326,6 +339,7 @@ fun AddEditFlashRuleScreen(
                                 }
                             }
                         }
+                    }
                     }
                 }
             }
