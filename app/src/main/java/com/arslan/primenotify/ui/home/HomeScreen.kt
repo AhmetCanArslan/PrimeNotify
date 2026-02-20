@@ -30,7 +30,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -87,7 +86,7 @@ fun HomeScreen(
     
     var isServiceActive by remember { mutableStateOf(isPrimeNotifyServiceEnabled(context)) }
 
-    val coroutineScope = rememberCoroutineScope()
+    val notificationScope = remember { kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main + kotlinx.coroutines.SupervisorJob()) }
     var remainingSeconds by remember { mutableIntStateOf(0) }
 
     Column(
@@ -172,7 +171,7 @@ fun HomeScreen(
             Button(
                 onClick = {
                     if (remainingSeconds == 0) {
-                        coroutineScope.launch {
+                        notificationScope.launch {
                             remainingSeconds = 4
                             while (remainingSeconds > 0) {
                                 kotlinx.coroutines.delay(1000)
