@@ -43,7 +43,7 @@ fun AddEditWakeUpRuleScreen(
     val focusManager = LocalFocusManager.current
     val rulesManager = remember { RulesManager(context) }
     val hasProximitySensor = remember {
-        context.packageManager.hasSystemFeature(PackageManager.FEATURE_SENSOR_PROXIMITY)
+        rulesManager.hasProximitySensor()
     }
     val initialRule = remember(ruleId) {
         if (ruleId != null && ruleId != "new") {

@@ -6,13 +6,22 @@ import com.google.gson.reflect.TypeToken
 import org.json.JSONArray
 import java.util.UUID
 
-class RulesManager(context: Context) {
+class RulesManager(private val context: Context) {
     
     private val prefs = context.getSharedPreferences("prime_notify_rules", Context.MODE_PRIVATE)
     private val gson = Gson()
     
     private val FLASH_RULES_KEY = "flash_rules_list"
     private val CUSTOM_PATTERNS_KEY = "custom_patterns_list"
+    private val HAS_PROXIMITY_SENSOR_KEY = "has_proximity_sensor"
+
+    fun hasProximitySensor(): Boolean {
+        if (!prefs.contains(HAS_PROXIMITY_SENSOR_KEY)) {
+            val hasSensor = context.packageManager.hasSystemFeature(android.content.pm.PackageManager.FEATURE_SENSOR_PROXIMITY)
+            prefs.edit().putBoolean(HAS_PROXIMITY_SENSOR_KEY, hasSensor).apply()
+        }
+        return prefs.getBoolean(HAS_PROXIMITY_SENSOR_KEY, true)
+    }
     
     fun getFlashRules(): List<FlashRule> {
         val json = prefs.getString(FLASH_RULES_KEY, null) ?: return emptyList()
