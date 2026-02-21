@@ -1,5 +1,6 @@
 package com.arslan.primenotify.ui.settings
 
+import android.content.pm.PackageManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -41,6 +42,9 @@ fun AddEditWakeUpRuleScreen(
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val rulesManager = remember { RulesManager(context) }
+    val hasProximitySensor = remember {
+        context.packageManager.hasSystemFeature(PackageManager.FEATURE_SENSOR_PROXIMITY)
+    }
     val initialRule = remember(ruleId) {
         if (ruleId != null && ruleId != "new") {
             rulesManager.getWakeUpRules().find { it.id == ruleId }
@@ -94,7 +98,7 @@ fun AddEditWakeUpRuleScreen(
                                     appNames = selectedApps.map { it.name },
                                     keywords = keywords,
                                     screenDurationSeconds = screenDurationSeconds,
-                                    pocketModeEnabled = pocketModeEnabled,
+                                    pocketModeEnabled = if (hasProximitySensor) pocketModeEnabled else false,
                                     applyOnVibration = applyOnVibration,
                                     applyOnSilent = applyOnSilent,
                                     applyOnDND = applyOnDND
@@ -103,7 +107,7 @@ fun AddEditWakeUpRuleScreen(
                                     appNames = selectedApps.map { it.name },
                                     keywords = keywords,
                                     screenDurationSeconds = screenDurationSeconds,
-                                    pocketModeEnabled = pocketModeEnabled,
+                                    pocketModeEnabled = if (hasProximitySensor) pocketModeEnabled else false,
                                     applyOnVibration = applyOnVibration,
                                     applyOnSilent = applyOnSilent,
                                     applyOnDND = applyOnDND
@@ -247,21 +251,28 @@ fun AddEditWakeUpRuleScreen(
                     }
 
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().then(
+                            if (hasProximitySensor) Modifier.clickable { pocketModeEnabled = !pocketModeEnabled } else Modifier
+                        ),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Pocket Mode", style = MaterialTheme.typography.bodyLarge)
                             Text(
-                                "Skip wake when phone is in pocket",
+                                "Pocket Mode", 
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = if (hasProximitySensor) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                            )
+                            Text(
+                                if (hasProximitySensor) "Skip wake when phone is in pocket" else "Proximity sensor not available",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = if (hasProximitySensor) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
                             )
                         }
                         Switch(
-                            checked = pocketModeEnabled,
-                            onCheckedChange = { pocketModeEnabled = it }
+                            checked = pocketModeEnabled && hasProximitySensor,
+                            onCheckedChange = { pocketModeEnabled = it },
+                            enabled = hasProximitySensor
                         )
                     }
 
