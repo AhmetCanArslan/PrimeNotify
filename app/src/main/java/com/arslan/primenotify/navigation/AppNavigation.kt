@@ -47,6 +47,9 @@ sealed class Screen(val route: String, val label: String) {
     data object AddEditFlashRule : Screen("add_edit_flash_rule/{ruleId}", "Add/Edit Flash Rule") {
         fun createRoute(ruleId: String?) = "add_edit_flash_rule/${ruleId ?: "new"}"
     }
+    data object AddEditWakeUpRule : Screen("add_edit_wake_up_rule/{ruleId}", "Add/Edit Wake Up Rule") {
+        fun createRoute(ruleId: String?) = "add_edit_wake_up_rule/${ruleId ?: "new"}"
+    }
 }
 
 @Composable
@@ -114,6 +117,26 @@ fun AppNavigation() {
             popExitTransition = { fadeOut(animationSpec = tween(300)) }
         ) {
             com.arslan.primenotify.ui.settings.WakeUpScreenSettingsScreen(
+                onNavigateBack = {
+                    if (rootNavController.previousBackStackEntry != null) {
+                        rootNavController.popBackStack()
+                    }
+                },
+                onNavigateToAddEditRule = { ruleId ->
+                    rootNavController.navigate(Screen.AddEditWakeUpRule.createRoute(ruleId))
+                }
+            )
+        }
+        composable(
+            route = Screen.AddEditWakeUpRule.route,
+            enterTransition = { fadeIn(animationSpec = tween(300)) },
+            exitTransition = { fadeOut(animationSpec = tween(300)) },
+            popEnterTransition = { fadeIn(animationSpec = tween(300)) },
+            popExitTransition = { fadeOut(animationSpec = tween(300)) }
+        ) { backStackEntry ->
+            val ruleId = backStackEntry.arguments?.getString("ruleId")
+            com.arslan.primenotify.ui.settings.AddEditWakeUpRuleScreen(
+                ruleId = ruleId,
                 onNavigateBack = {
                     if (rootNavController.previousBackStackEntry != null) {
                         rootNavController.popBackStack()

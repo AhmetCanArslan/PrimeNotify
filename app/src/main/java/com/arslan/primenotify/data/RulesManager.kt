@@ -50,10 +50,13 @@ class RulesManager(context: Context) {
                 val patternStr = obj.optString("pattern", "HEARTBEAT")
                 val pattern = try { FlashPattern.valueOf(patternStr) } catch (e: Exception) { FlashPattern.HEARTBEAT }
                 val isEnabled = obj.optBoolean("isEnabled", true)
+                val applyOnVibration = obj.optBoolean("applyOnVibration", true)
+                val applyOnSilent = obj.optBoolean("applyOnSilent", true)
+                val applyOnDND = obj.optBoolean("applyOnDND", true)
                 val customPatternStr = obj.optString("customPatternId", "")
                 val customPatternId = if (customPatternStr.isNotEmpty()) customPatternStr else null
                 
-                cleanRules.add(FlashRule(id, packageNames, appNames, keyword, keywords, pattern, customPatternId, isEnabled))
+                cleanRules.add(FlashRule(id, packageNames, appNames, keyword, keywords, pattern, customPatternId, applyOnVibration, applyOnSilent, applyOnDND, isEnabled))
             }
             cleanRules
         } catch (e: Exception) {
@@ -117,5 +120,53 @@ class RulesManager(context: Context) {
         val current = getCustomPatterns().toMutableList()
         current.removeAll { it.id == id }
         prefs.edit().putString(CUSTOM_PATTERNS_KEY, gson.toJson(current)).apply()
+    }
+    
+    // Wake Up Rules
+    
+    private val WAKE_UP_RULES_KEY = "wake_up_rules_list"
+    
+    fun getWakeUpRules(): List<WakeUpRule> {
+        val json = prefs.getString(WAKE_UP_RULES_KEY, null) ?: return emptyList()
+        return try {
+            val listType = object : TypeToken<List<WakeUpRule>>() {}.type
+            gson.fromJson<List<WakeUpRule>>(json, listType) ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+    
+    fun saveWakeUpRules(rules: List<WakeUpRule>) {
+        prefs.edit().putString(WAKE_UP_RULES_KEY, gson.toJson(rules)).apply()
+    }
+    
+    fun addWakeUpRule(rule: WakeUpRule) {
+        val current = getWakeUpRules().toMutableList()
+        current.add(rule)
+        saveWakeUpRules(current)
+    }
+    
+    fun removeWakeUpRule(ruleId: String) {
+        val current = getWakeUpRules().toMutableList()
+        current.removeAll { it.id == ruleId }
+        saveWakeUpRules(current)
+    }
+    
+    fun toggleWakeUpRule(ruleId: String, isEnabled: Boolean) {
+        val current = getWakeUpRules().toMutableList()
+        val index = current.indexOfFirst { it.id == ruleId }
+        if (index != -1) {
+            current[index] = current[index].copy(isEnabled = isEnabled)
+            saveWakeUpRules(current)
+        }
+    }
+    
+    fun updateWakeUpRule(updatedRule: WakeUpRule) {
+        val current = getWakeUpRules().toMutableList()
+        val index = current.indexOfFirst { it.id == updatedRule.id }
+        if (index != -1) {
+            current[index] = updatedRule
+            saveWakeUpRules(current)
+        }
     }
 }

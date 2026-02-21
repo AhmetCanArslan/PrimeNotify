@@ -8,7 +8,7 @@ import java.util.UUID
 
 @Keep
 @Parcelize
-data class FlashRule(
+data class WakeUpRule(
     @SerializedName("id")
     val id: String = UUID.randomUUID().toString(),
     
@@ -18,17 +18,14 @@ data class FlashRule(
     @SerializedName("appNames")
     val appNames: List<String>,
     
-    @SerializedName("keyword")
-    val keyword: String = "",
-    
     @SerializedName("keywords")
     val keywords: List<String> = emptyList(),
     
-    @SerializedName("pattern")
-    val pattern: FlashPattern,
+    @SerializedName("screenDurationSeconds")
+    val screenDurationSeconds: Int = 10,
     
-    @SerializedName("customPatternId")
-    val customPatternId: String? = null,
+    @SerializedName("pocketModeEnabled")
+    val pocketModeEnabled: Boolean = true,
     
     @SerializedName("applyOnVibration")
     val applyOnVibration: Boolean = true,
@@ -42,9 +39,3 @@ data class FlashRule(
     @SerializedName("isEnabled")
     var isEnabled: Boolean = true
 ) : Parcelable
-
-@Keep
-enum class FlashPattern(val displayName: String) {
-    HEARTBEAT("Heartbeat"),
-    PING_PONG("Ping Pong")
-}

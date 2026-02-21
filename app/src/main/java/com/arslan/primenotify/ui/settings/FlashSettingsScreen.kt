@@ -270,11 +270,18 @@ fun RuleCard(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                val patternText = if (rule.customPatternId != null) {
+                    val cPattern = rulesManager.getCustomPatterns().find { it.id == rule.customPatternId }
+                    "Pattern: ${cPattern?.name ?: "Unknown"}"
+                } else "Pattern: ${rule.pattern.displayName}"
+                val applyOnModes = mutableListOf<String>()
+                if (rule.applyOnVibration) applyOnModes.add("Vib")
+                if (rule.applyOnSilent) applyOnModes.add("Sil")
+                if (rule.applyOnDND) applyOnModes.add("DND")
+                val modesText = if (applyOnModes.isEmpty()) "None" else if (applyOnModes.size == 3) "All" else applyOnModes.joinToString(", ")
+                val silentModeText = " · On: $modesText"
                 Text(
-                    text = if (rule.customPatternId != null) {
-                        val cPattern = rulesManager.getCustomPatterns().find { it.id == rule.customPatternId }
-                        "Pattern: ${cPattern?.name ?: "Unknown"}"
-                    } else "Pattern: ${rule.pattern.displayName}",
+                    text = "$patternText$silentModeText",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(top = 4.dp)
