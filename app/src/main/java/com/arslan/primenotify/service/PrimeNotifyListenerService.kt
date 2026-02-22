@@ -13,17 +13,20 @@ class PrimeNotifyListenerService : NotificationListenerService() {
     private lateinit var rulesManager: RulesManager
     private lateinit var flashManager: FlashManager
     private lateinit var screenWakeManager: ScreenWakeManager
+    private lateinit var aodManager: AodManager
     
     override fun onCreate() {
         super.onCreate()
         rulesManager = RulesManager(this)
         flashManager = FlashManager(this)
         screenWakeManager = ScreenWakeManager(this)
+        aodManager = AodManager(this)
     }
 
     override fun onDestroy() {
         flashManager.stop()
         screenWakeManager.stop()
+        aodManager.stop()
         super.onDestroy()
     }
 
@@ -114,10 +117,50 @@ class PrimeNotifyListenerService : NotificationListenerService() {
             }
         }
         
+        // AOD rule matching
+        val activeAodRules = rulesManager.getAodRules().filter { it.isEnabled }
+        
+        val matchedAodRule = activeAodRules.firstOrNull { rule ->
+            val isAppMatch = rule.packageNames.contains(packageName)
+            val isKeywordMatch = rule.keywords.isEmpty() || rule.keywords.any { kw ->
+                searchBody.contains(kw.lowercase())
+            }
+            isAppMatch && isKeywordMatch
+        }
+        
+        if (matchedAodRule != null) {
+            val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            val ringerMode = am.ringerMode
+            val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val filter = nm.currentInterruptionFilter
+
+            val isVibration = ringerMode == AudioManager.RINGER_MODE_VIBRATE
+            val isSilent = ringerMode == AudioManager.RINGER_MODE_SILENT
+            val isDND = filter != NotificationManager.INTERRUPTION_FILTER_ALL
+
+            var shouldExecute = true
+            if (isVibration && !matchedAodRule.applyOnVibration) shouldExecute = false
+            if (isSilent && !matchedAodRule.applyOnSilent) shouldExecute = false
+            if (isDND && !matchedAodRule.applyOnDND) shouldExecute = false
+            
+            if (shouldExecute) {
+                aodManager.triggerAod(durationSeconds = matchedAodRule.durationSeconds)
+            }
+        }
+        
         super.onNotificationPosted(sbn)
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
         super.onNotificationRemoved(sbn)
+        if (sbn != null && isPrimeNotifyServiceEnabled(this)) {
+            val activeAodRules = rulesManager.getAodRules().filter { it.isEnabled && it.durationSeconds == -1 }
+            val matchedAodRule = activeAodRules.firstOrNull { rule ->
+                rule.packageNames.contains(sbn.packageName)
+            }
+            if (matchedAodRule != null) {
+                aodManager.stopAodForReason(-1)
+            }
+        }
     }
 }

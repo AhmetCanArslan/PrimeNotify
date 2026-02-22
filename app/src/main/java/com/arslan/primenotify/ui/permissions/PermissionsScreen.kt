@@ -28,10 +28,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -83,6 +86,8 @@ fun PermissionsScreen(modifier: Modifier = Modifier) {
     ) {
         refreshState++
     }
+
+    var showAdbDialog by remember { mutableStateOf(false) }
 
     val permissionItems = remember(refreshState) { buildPermissionItems(context) }
 
@@ -167,6 +172,10 @@ fun PermissionsScreen(modifier: Modifier = Modifier) {
                                             )
                                         )
                                     }
+
+                                    PermissionType.WriteSecureSettings -> {
+                                        showAdbDialog = true
+                                    }
                                 }
                             }
                         ) {
@@ -176,7 +185,22 @@ fun PermissionsScreen(modifier: Modifier = Modifier) {
                 }
             }
         }
+    
+    if (showAdbDialog) {
+        AlertDialog(
+            onDismissRequest = { showAdbDialog = false },
+            title = { Text("Grant Secure Settings Permission") },
+            text = {
+                Text("To toggle Always-On Display, PrimeNotify needs the WRITE_SECURE_SETTINGS permission. Since this is a system permission, it must be granted via ADB on a computer:\n\nadb shell pm grant ${context.packageName} android.permission.WRITE_SECURE_SETTINGS")
+            },
+            confirmButton = {
+                TextButton(onClick = { showAdbDialog = false }) {
+                    Text("OK")
+                }
+            }
+        )
     }
+}
 
 @Preview(showBackground = true)
 @Composable
@@ -192,7 +216,8 @@ private enum class PermissionType {
     Camera,
     WriteSettings,
     NotificationPolicy,
-    IgnoreBatteryOptimizations
+    IgnoreBatteryOptimizations,
+    WriteSecureSettings
 }
 
 private data class PermissionItem(
@@ -263,6 +288,12 @@ private fun buildPermissionItems(context: Context): List<PermissionItem> {
             title = "Run in Background",
             description = "Hizmetin pil tasarrufu tarafından kapatılmasını önler",
             granted = ignoreBatteryOptimizationsGranted
+        ),
+        PermissionItem(
+            type = PermissionType.WriteSecureSettings,
+            title = "Secure Settings (AOD)",
+            description = "AOD ayarını değiştirebilmek için ADB izni gerekir",
+            granted = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED
         )
     )
 }

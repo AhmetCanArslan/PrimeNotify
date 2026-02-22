@@ -178,4 +178,51 @@ class RulesManager(private val context: Context) {
             saveWakeUpRules(current)
         }
     }
+    // AOD Rules
+    
+    private val AOD_RULES_KEY = "aod_rules_list"
+    
+    fun getAodRules(): List<AodRule> {
+        val json = prefs.getString(AOD_RULES_KEY, null) ?: return emptyList()
+        return try {
+            val listType = object : TypeToken<List<AodRule>>() {}.type
+            gson.fromJson<List<AodRule>>(json, listType) ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+    
+    fun saveAodRules(rules: List<AodRule>) {
+        prefs.edit().putString(AOD_RULES_KEY, gson.toJson(rules)).apply()
+    }
+    
+    fun addAodRule(rule: AodRule) {
+        val current = getAodRules().toMutableList()
+        current.add(rule)
+        saveAodRules(current)
+    }
+    
+    fun removeAodRule(ruleId: String) {
+        val current = getAodRules().toMutableList()
+        current.removeAll { it.id == ruleId }
+        saveAodRules(current)
+    }
+    
+    fun toggleAodRule(ruleId: String, isEnabled: Boolean) {
+        val current = getAodRules().toMutableList()
+        val index = current.indexOfFirst { it.id == ruleId }
+        if (index != -1) {
+            current[index] = current[index].copy(isEnabled = isEnabled)
+            saveAodRules(current)
+        }
+    }
+    
+    fun updateAodRule(updatedRule: AodRule) {
+        val current = getAodRules().toMutableList()
+        val index = current.indexOfFirst { it.id == updatedRule.id }
+        if (index != -1) {
+            current[index] = updatedRule
+            saveAodRules(current)
+        }
+    }
 }
