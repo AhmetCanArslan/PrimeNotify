@@ -271,11 +271,7 @@ enum class PermissionType {
     NotificationAccess,
     PostNotifications,
     Camera,
-    WriteSettings,
-    NotificationPolicy,
-    Vibrate,
-    ModifyAudio,
-    WakeLock
+    NotificationPolicy
 }
 
 data class PermissionItem(
@@ -303,8 +299,6 @@ fun buildPermissionItems(context: Context): List<PermissionItem> {
         .getEnabledListenerPackages(context)
         .contains(context.packageName)
 
-    val writeSettingsGranted = android.provider.Settings.System.canWrite(context)
-
     val notificationPolicyGranted = notificationManager?.isNotificationPolicyAccessGranted == true
 
     return listOf(
@@ -327,34 +321,10 @@ fun buildPermissionItems(context: Context): List<PermissionItem> {
             granted = cameraGranted
         ),
         PermissionItem(
-            type = PermissionType.WriteSettings,
-            title = context.getString(R.string.permission_modify_system_settings),
-            description = context.getString(R.string.permission_modify_system_settings_desc),
-            granted = writeSettingsGranted
-        ),
-        PermissionItem(
             type = PermissionType.NotificationPolicy,
             title = context.getString(R.string.permission_notification_policy),
             description = context.getString(R.string.permission_notification_policy_desc),
             granted = notificationPolicyGranted
-        ),
-        PermissionItem(
-            type = PermissionType.Vibrate,
-            title = context.getString(R.string.permission_vibrate),
-            description = context.getString(R.string.permission_vibrate_desc),
-            granted = true
-        ),
-        PermissionItem(
-            type = PermissionType.ModifyAudio,
-            title = context.getString(R.string.permission_modify_audio),
-            description = context.getString(R.string.permission_modify_audio_desc),
-            granted = true
-        ),
-        PermissionItem(
-            type = PermissionType.WakeLock,
-            title = context.getString(R.string.permission_wake_lock),
-            description = context.getString(R.string.permission_wake_lock_desc),
-            granted = true
         )
     )
 }

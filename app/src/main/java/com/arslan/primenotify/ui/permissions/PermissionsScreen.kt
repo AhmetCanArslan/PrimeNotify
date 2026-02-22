@@ -161,15 +161,6 @@ fun PermissionsScreen(modifier: Modifier = Modifier) {
                                         settingsLauncher.launch(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
                                     }
 
-                                    PermissionType.WriteSettings -> {
-                                        settingsLauncher.launch(
-                                            Intent(
-                                                Settings.ACTION_MANAGE_WRITE_SETTINGS,
-                                                Uri.parse("package:${context.packageName}")
-                                            )
-                                        )
-                                    }
-
                                     PermissionType.NotificationPolicy -> {
                                         settingsLauncher.launch(Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS))
                                     }
@@ -279,7 +270,6 @@ private enum class PermissionType {
     NotificationAccess,
     PostNotifications,
     Camera,
-    WriteSettings,
     NotificationPolicy,
     IgnoreBatteryOptimizations,
     WriteSecureSettings
@@ -310,8 +300,6 @@ private fun buildPermissionItems(context: Context): List<PermissionItem> {
         .getEnabledListenerPackages(context)
         .contains(context.packageName)
 
-    val writeSettingsGranted = Settings.System.canWrite(context)
-
     val notificationPolicyGranted = notificationManager?.isNotificationPolicyAccessGranted == true
 
     val powerManager = context.getSystemService(PowerManager::class.java)
@@ -335,12 +323,6 @@ private fun buildPermissionItems(context: Context): List<PermissionItem> {
             title = context.getString(R.string.permission_camera_flash),
             description = context.getString(R.string.permission_camera_flash_desc),
             granted = cameraGranted
-        ),
-        PermissionItem(
-            type = PermissionType.WriteSettings,
-            title = context.getString(R.string.permission_modify_system_settings),
-            description = context.getString(R.string.permission_modify_system_settings_desc),
-            granted = writeSettingsGranted
         ),
         PermissionItem(
             type = PermissionType.NotificationPolicy,
