@@ -1,3 +1,155 @@
 <resources>
+    <!-- App Name -->
     <string name="app_name">PrimeNotify</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_permissions">Permissions</string>
+    <string name="nav_flash_settings">Flash Settings</string>
+    <string name="nav_wake_up_screen_settings">Wake Up Screen Settings</string>
+    <string name="nav_aod_settings">AOD Settings</string>
+    <string name="nav_create_pattern">Create Pattern</string>
+    <string name="nav_add_edit_flash_rule">Add/Edit Flash Rule</string>
+    <string name="nav_add_edit_wake_up_rule">Add/Edit Wake Up Rule</string>
+    <string name="nav_add_edit_aod_rule">Add/Edit AOD Rule</string>
+
+    <!-- Home Screen -->
+    <string name="service_title">PrimeNotify Service</string>
+    <string name="service_active">Active</string>
+    <string name="service_disabled">Disabled</string>
+    <string name="flash_pattern_title">Flash Pattern</string>
+    <string name="flash_pattern_desc">Custom flash pattern based on notification text</string>
+    <string name="wake_up_screen_title">Wake Up Screen</string>
+    <string name="wake_up_screen_desc">Wake screen when matching notification arrives</string>
+    <string name="turn_on_aod_title">Turn On AOD</string>
+    <string name="turn_on_aod_desc">Turn on AOD display when screen is off</string>
+    <string name="send_test_notification">Send Test Notification</string>
+    <string name="sending_in_seconds">Sending in %1$d seconds...</string>
+    <string name="cd_settings_for">Settings for %1$s</string>
+    <string name="cd_check_item">Check %1$s</string>
+    <string name="cd_uncheck_item">Uncheck %1$s</string>
+
+    <!-- Permission Items -->
+    <string name="permission_notification_access">Notification Access</string>
+    <string name="permission_notification_access_desc">Notification access to detect certain notifications</string>
+    <string name="permission_post_notifications">Post Notifications</string>
+    <string name="permission_post_notifications_desc">To allow PrimeNotify to show its own notifications</string>
+    <string name="permission_camera_flash">Camera / Flash</string>
+    <string name="permission_camera_flash_desc">Camera-flash access to run flash patterns</string>
+    <string name="permission_modify_system_settings">Modify System Settings</string>
+    <string name="permission_modify_system_settings_desc">For AOD and system vibration/settings control</string>
+    <string name="permission_notification_policy">Notification Policy Access</string>
+    <string name="permission_notification_policy_desc">To change ring and vibration behavior</string>
+    <string name="permission_vibrate">Vibrate</string>
+    <string name="permission_vibrate_desc">To control vibration motor</string>
+    <string name="permission_modify_audio">Modify Audio Settings</string>
+    <string name="permission_modify_audio_desc">To edit existing ring/vibration settings</string>
+    <string name="permission_wake_lock">Wake Lock</string>
+    <string name="permission_wake_lock_desc">For screen wake up scenarios</string>
+    <string name="permission_run_background">Run in Background</string>
+    <string name="permission_run_background_desc">Prevents service from being killed by battery saver</string>
+    <string name="permission_secure_settings">Secure Settings (AOD)</string>
+    <string name="permission_secure_settings_desc">ADB permission required to change AOD setting</string>
+
+    <!-- Permission Screen -->
+    <string name="permission_granted">Granted</string>
+    <string name="permission_grant">Grant</string>
+    <string name="grant_secure_settings_title">Grant Secure Settings</string>
+    <string name="grant_secure_settings_desc">To toggle Always-On Display, PrimeNotify needs the WRITE_SECURE_SETTINGS permission.</string>
+    <string name="grant_secure_settings_adb_info">Since this is a system permission, it must be granted via ADB on a computer. Open your terminal or command prompt and run:</string>
+    <string name="command_copied">Command copied to clipboard</string>
+    <string name="copy">COPY</string>
+    <string name="got_it">Got It</string>
+    <string name="close">Close</string>
+
+    <!-- Test Notification -->
+    <string name="test_notification_channel">Test Notifications</string>
+    <string name="test_notification_channel_desc">Channel for test notifications</string>
+    <string name="test_notification_title">PrimeNotify Test</string>
+    <string name="test_notification_text">This is a test notification to verify rules.</string>
+
+    <!-- Settings Screens -->
+    <string name="flash_pattern_settings">Flash Pattern Settings</string>
+    <string name="wake_up_screen_settings">Wake Up Screen Settings</string>
+    <string name="aod_settings">AOD Settings</string>
+    <string name="back">Back</string>
+    <string name="rules">Rules</string>
+    <string name="no_rules_configured">No rules configured.\nTap + to add a new rule.</string>
+    <string name="no_rules_configured_tap_below">No rules configured.\nTap below to add a new rule.</string>
+    <string name="add_new_rule">Add New Rule</string>
+    <string name="custom_patterns">Custom Patterns</string>
+    <string name="delete_pattern">Delete Pattern</string>
+    <string name="delete_rule">Delete Rule</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm_delete_rule">Are you sure you want to delete this rule?</string>
+    <string name="confirm_delete_pattern">Are you sure you want to delete pattern \'%1$s\'?\nAny rules using it will reset to default.</string>
+    <string name="no_apps_chosen">No Apps Chosen</string>
+    <string name="keywords_any">Keywords: Any</string>
+    <string name="keywords_format">Keywords: %1$s</string>
+    <string name="pattern_unknown">Pattern: Unknown</string>
+    <string name="pattern_format">Pattern: %1$s</string>
+    <string name="unknown">Unknown</string>
+    <string name="mode_on">On: %1$s</string>
+    <string name="mode_none">None</string>
+    <string name="mode_all">All</string>
+    <string name="edit_rule">Edit Rule</string>
+    <string name="delete_rule_desc">Delete Rule</string>
+    <string name="create_custom_pattern">Create Custom Pattern</string>
+
+    <!-- Add/Edit Rule Screen -->
+    <string name="edit_rule_title">Edit Rule</string>
+    <string name="create_rule_title">Create Rule</string>
+    <string name="edit_aod_rule_title">Edit AOD Rule</string>
+    <string name="create_aod_rule_title">Create AOD Rule</string>
+    <string name="save">Save</string>
+    <string name="trigger_keywords">Trigger Keywords</string>
+    <string name="remove">Remove</string>
+    <string name="add_keyword_optional">Add Keyword (Optional)</string>
+    <string name="add_keyword">Add Keyword</string>
+    <string name="flash_pattern">Flash Pattern</string>
+    <string name="select_pattern">Select Pattern</string>
+    <string name="unknown_custom">Unknown Custom</string>
+    <string name="apply_rule_on">Apply rule on:</string>
+    <string name="vibration">Vibration</string>
+    <string name="silence">Silence</string>
+    <string name="dnd">DND</string>
+
+    <!-- Wake Up Settings -->
+    <string name="wake_up_settings">Wake Up Settings</string>
+    <string name="screen_duration">Screen Duration</string>
+    <string name="default_duration">Default</string>
+    <string name="duration_format">%1$ds</string>
+    <string name="pocket_mode">Pocket Mode</string>
+    <string name="pocket_mode_desc">Skip wake when phone is in pocket</string>
+    <string name="proximity_sensor_unavailable">Proximity sensor not available</string>
+    <string name="duration_default">%1$ds</string>
+    <string name="mode_on_short">On</string>
+    <string name="mode_off">Off</string>
+
+    <!-- AOD Settings -->
+    <string name="always_on_display_settings">Always-On Display Settings</string>
+    <string name="aod_duration">AOD Duration</string>
+    <string name="until_dismiss_notification">Until dismiss notification</string>
+    <string name="until_unlocking_phone">Until unlocking the phone</string>
+    <string name="duration_seconds">Duration: %1$ds</string>
+
+    <!-- Create Pattern Screen -->
+    <string name="create_pattern">Create Pattern</string>
+    <string name="recording_format">Recording... %1$d.%2$ds</string>
+    <string name="press_start_record">Press Start to Record (Max 5s)</string>
+    <string name="tap_hold">TAP/HOLD</string>
+    <string name="flash">FLASH</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="save_pattern">Save Pattern</string>
+    <string name="pattern_name">Pattern Name</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_back">Navigate back</string>
+    <string name="cd_settings">Settings</string>
+    <string name="cd_delete">Delete</string>
+    <string name="cd_edit">Edit</string>
+    <string name="cd_add">Add</string>
+    <string name="cd_remove">Remove</string>
 </resources>

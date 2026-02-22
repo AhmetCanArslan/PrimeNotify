@@ -12,8 +12,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.arslan.primenotify.R
 import com.arslan.primenotify.data.CustomPattern
 import com.arslan.primenotify.data.FlashRule
 import com.arslan.primenotify.data.RulesManager
@@ -36,12 +38,12 @@ fun FlashSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Flash Pattern Settings") },
+                title = { Text(stringResource(R.string.flash_pattern_settings)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.cd_back)
                         )
                     }
                 }
@@ -63,7 +65,7 @@ fun FlashSettingsScreen(
                 // Rules section
                 item {
                     Text(
-                        text = "Rules",
+                        text = stringResource(R.string.rules),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 8.dp)
@@ -77,7 +79,7 @@ fun FlashSettingsScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "No rules configured.\nTap + to add a new rule.",
+                                text = stringResource(R.string.no_rules_configured),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -108,7 +110,7 @@ fun FlashSettingsScreen(
                         onClick = { onNavigateToAddEditRule(null) },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Add New Rule")
+                        Text(stringResource(R.string.add_new_rule))
                     }
                 }
 
@@ -116,7 +118,7 @@ fun FlashSettingsScreen(
                 item {
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Custom Patterns",
+                        text = stringResource(R.string.custom_patterns),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(vertical = 8.dp)
@@ -137,7 +139,7 @@ fun FlashSettingsScreen(
                             IconButton(onClick = {
                                 patternToDelete = pattern
                             }) {
-                                Icon(Icons.Default.Delete, contentDescription = "Delete Pattern", tint = MaterialTheme.colorScheme.error)
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.cd_delete), tint = MaterialTheme.colorScheme.error)
                             }
                         }
                     }
@@ -148,7 +150,7 @@ fun FlashSettingsScreen(
                         onClick = onNavigateToCreatePattern,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Create Custom Pattern")
+                        Text(stringResource(R.string.create_custom_pattern))
                     }
                 }
             }
@@ -158,22 +160,22 @@ fun FlashSettingsScreen(
     if (ruleToDelete != null) {
         AlertDialog(
             onDismissRequest = { ruleToDelete = null },
-            title = { Text("Delete Rule") },
-            text = { Text("Are you sure you want to delete this rule?") },
+            title = { Text(stringResource(R.string.delete_rule)) },
+            text = { Text(stringResource(R.string.confirm_delete_rule)) },
             confirmButton = {
                 Button(
-                    onClick = {
-                        val toDelete = ruleToDelete
-                        if (toDelete != null) {
-                            rulesManager.removeFlashRule(toDelete.id)
-                            rules = rulesManager.getFlashRules()
-                        }
-                        ruleToDelete = null
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Delete")
-                }
+                        onClick = {
+                            val toDelete = ruleToDelete
+                            if (toDelete != null) {
+                                rulesManager.removeFlashRule(toDelete.id)
+                                rules = rulesManager.getFlashRules()
+                            }
+                            ruleToDelete = null
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text(stringResource(R.string.delete))
+                    }
             },
             dismissButton = {
                 TextButton(onClick = { ruleToDelete = null }) {
@@ -186,28 +188,28 @@ fun FlashSettingsScreen(
     if (patternToDelete != null) {
         AlertDialog(
             onDismissRequest = { patternToDelete = null },
-            title = { Text("Delete Pattern") },
-            text = { Text("Are you sure you want to delete pattern '${patternToDelete?.name}'?\nAny rules using it will reset to default.") },
+            title = { Text(stringResource(R.string.delete_pattern)) },
+            text = { Text(stringResource(R.string.confirm_delete_pattern, patternToDelete?.name ?: "")) },
             confirmButton = {
                 Button(
-                    onClick = {
-                        val toDelete = patternToDelete
-                        if (toDelete != null) {
-                            rulesManager.removeCustomPattern(toDelete.id)
-                            customPatterns = rulesManager.getCustomPatterns()
-                            
-                            val currentRules = rulesManager.getFlashRules()
-                            currentRules.filter { it.customPatternId == toDelete.id }.forEach {
-                                rulesManager.updateFlashRule(it.copy(customPatternId = null))
+                        onClick = {
+                            val toDelete = patternToDelete
+                            if (toDelete != null) {
+                                rulesManager.removeCustomPattern(toDelete.id)
+                                customPatterns = rulesManager.getCustomPatterns()
+                                
+                                val currentRules = rulesManager.getFlashRules()
+                                currentRules.filter { it.customPatternId == toDelete.id }.forEach {
+                                    rulesManager.updateFlashRule(it.copy(customPatternId = null))
+                                }
+                                rules = rulesManager.getFlashRules()
                             }
-                            rules = rulesManager.getFlashRules()
-                        }
-                        patternToDelete = null
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Delete")
-                }
+                            patternToDelete = null
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text(stringResource(R.string.delete))
+                    }
             },
             dismissButton = {
                 TextButton(onClick = { patternToDelete = null }) {
@@ -243,25 +245,25 @@ fun RuleCard(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = if (rule.appNames.isNotEmpty()) rule.appNames.joinToString(", ") else "No Apps Chosen",
+                    text = if (rule.appNames.isNotEmpty()) rule.appNames.joinToString(", ") else stringResource(R.string.no_apps_chosen),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = if (rule.keywords.isEmpty()) "Keywords: Any" else "Keywords: ${rule.keywords.joinToString()}",
+                    text = if (rule.keywords.isEmpty()) stringResource(R.string.keywords_any) else stringResource(R.string.keywords_format, rule.keywords.joinToString()),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 val patternText = if (rule.customPatternId != null) {
                     val cPattern = rulesManager.getCustomPatterns().find { it.id == rule.customPatternId }
-                    "Pattern: ${cPattern?.name ?: "Unknown"}"
-                } else "Pattern: ${rule.pattern.displayName}"
+                    stringResource(R.string.pattern_format, cPattern?.name ?: stringResource(R.string.unknown))
+                } else stringResource(R.string.pattern_format, rule.pattern.displayName)
                 val applyOnModes = mutableListOf<String>()
-                if (rule.applyOnVibration) applyOnModes.add("Vib")
-                if (rule.applyOnSilent) applyOnModes.add("Sil")
-                if (rule.applyOnDND) applyOnModes.add("DND")
-                val modesText = if (applyOnModes.isEmpty()) "None" else if (applyOnModes.size == 3) "All" else applyOnModes.joinToString(", ")
-                val silentModeText = " · On: $modesText"
+                if (rule.applyOnVibration) applyOnModes.add(stringResource(R.string.vibration))
+                if (rule.applyOnSilent) applyOnModes.add(stringResource(R.string.silence))
+                if (rule.applyOnDND) applyOnModes.add(stringResource(R.string.dnd))
+                val modesText = if (applyOnModes.isEmpty()) stringResource(R.string.mode_none) else if (applyOnModes.size == 3) stringResource(R.string.mode_all) else applyOnModes.joinToString(", ")
+                val silentModeText = stringResource(R.string.mode_on, modesText)
                 Text(
                     text = "$patternText$silentModeText",
                     style = MaterialTheme.typography.bodySmall,
@@ -273,14 +275,14 @@ fun RuleCard(
                 IconButton(onClick = onEdit) {
                     Icon(
                         imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit Rule",
+                        contentDescription = stringResource(R.string.edit_rule),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
                 IconButton(onClick = onDelete) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete Rule",
+                        contentDescription = stringResource(R.string.delete_rule_desc),
                         tint = MaterialTheme.colorScheme.error
                     )
                 }

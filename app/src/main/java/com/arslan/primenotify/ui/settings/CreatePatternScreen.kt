@@ -14,7 +14,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.arslan.primenotify.R
 import com.arslan.primenotify.data.CustomPattern
 import com.arslan.primenotify.data.RulesManager
 import com.arslan.primenotify.service.FlashManager
@@ -65,10 +67,10 @@ fun CreatePatternScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Create Pattern") },
+                title = { Text(stringResource(R.string.create_pattern)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_back))
                     }
                 }
             )
@@ -83,7 +85,7 @@ fun CreatePatternScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = if (isRecording) "Recording... ${recordingTimeLeft / 1000}.${(recordingTimeLeft % 1000) / 100}s" else "Press Start to Record (Max 5s)",
+                text = if (isRecording) stringResource(R.string.recording_format, recordingTimeLeft / 1000, (recordingTimeLeft % 1000) / 100) else stringResource(R.string.press_start_record),
                 style = MaterialTheme.typography.titleLarge
             )
             
@@ -124,7 +126,7 @@ fun CreatePatternScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = if (isRecording) "TAP/HOLD" else "FLASH",
+                    text = if (isRecording) stringResource(R.string.tap_hold) else stringResource(R.string.flash),
                     color = if (isFlashOn) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.headlineMedium
                 )
@@ -141,7 +143,7 @@ fun CreatePatternScreen(
                         },
                         modifier = Modifier.fillMaxWidth(0.5f)
                     ) {
-                        Text("Start")
+                        Text(stringResource(R.string.start))
                     }
                 } else {
                     Button(
@@ -155,7 +157,7 @@ fun CreatePatternScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                         modifier = Modifier.fillMaxWidth(0.5f)
                     ) {
-                        Text("Stop")
+                        Text(stringResource(R.string.stop))
                     }
                 }
             }
@@ -165,12 +167,12 @@ fun CreatePatternScreen(
     if (showNameDialog) {
         AlertDialog(
             onDismissRequest = { showNameDialog = false },
-            title = { Text("Save Pattern") },
+            title = { Text(stringResource(R.string.save_pattern)) },
             text = {
                 OutlinedTextField(
                     value = patternName,
                     onValueChange = { patternName = it },
-                    label = { Text("Pattern Name") },
+                    label = { Text(stringResource(R.string.pattern_name)) },
                     singleLine = true
                 )
             },
@@ -208,12 +210,12 @@ fun CreatePatternScreen(
                     },
                     enabled = patternName.isNotBlank()
                 ) {
-                    Text("Save")
+                    Text(stringResource(R.string.save))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showNameDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )

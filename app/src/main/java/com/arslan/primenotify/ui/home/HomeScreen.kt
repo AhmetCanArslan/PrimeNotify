@@ -34,6 +34,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -49,6 +50,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.compose.material3.Button
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import com.arslan.primenotify.R
 import com.arslan.primenotify.service.isPrimeNotifyServiceEnabled
 import com.arslan.primenotify.service.setPrimeNotifyServiceEnabled
 import com.arslan.primenotify.ui.theme.PrimeNotifyTheme
@@ -112,13 +114,13 @@ fun HomeScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "PrimeNotify Service",
+                            text = stringResource(R.string.service_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = if (isServiceActive) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = if (isServiceActive) "Active" else "Disabled",
+                            text = if (isServiceActive) stringResource(R.string.service_active) else stringResource(R.string.service_disabled),
                             style = MaterialTheme.typography.bodyMedium,
                             color = if (isServiceActive) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                         )
@@ -141,24 +143,24 @@ fun HomeScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     RuleRow(
-                        title = "Flash Pattern",
-                        description = "Bildirim metnine göre özel flaş deseni",
+                        title = stringResource(R.string.flash_pattern_title),
+                        description = stringResource(R.string.flash_pattern_desc),
                         checked = flashEnabled,
                         onCheckedChange = { flashEnabled = it },
                         onSettingsClick = onNavigateToFlashSettings
                     )
                     HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                     RuleRow(
-                        title = "Wake Up Screen",
-                        description = "Eşleşen bildirimi alınca ekranı uyandır",
+                        title = stringResource(R.string.wake_up_screen_title),
+                        description = stringResource(R.string.wake_up_screen_desc),
                         checked = wakeUpScreenEnabled,
                         onCheckedChange = { wakeUpScreenEnabled = it },
                         onSettingsClick = onNavigateToWakeUpScreenSettings
                     )
                     HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                     RuleRow(
-                        title = "Turn On AOD",
-                        description = "Ekran kapalıysa AOD görünümünü aç",
+                        title = stringResource(R.string.turn_on_aod_title),
+                        description = stringResource(R.string.turn_on_aod_desc),
                         checked = aodEnabled,
                         onCheckedChange = { aodEnabled = it },
                         onSettingsClick = onNavigateToAODSettings
@@ -184,12 +186,12 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = remainingSeconds == 0
             ) {
-                Text("Send Test Notification")
+                Text(stringResource(R.string.send_test_notification))
             }
 
             if (remainingSeconds > 0) {
                 Text(
-                    text = "Sending in $remainingSeconds seconds...",
+                    text = stringResource(R.string.sending_in_seconds, remainingSeconds),
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(top = 8.dp, bottom = 24.dp),
@@ -239,7 +241,7 @@ private fun RuleRow(
             IconButton(onClick = onSettingsClick) {
                 Icon(
                     imageVector = Icons.Default.Settings,
-                    contentDescription = "Settings for $title",
+                    contentDescription = stringResource(R.string.cd_settings_for, title),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -249,7 +251,7 @@ private fun RuleRow(
             ) {
                 Icon(
                     imageVector = if (checked) Icons.Rounded.CheckCircle else Icons.Outlined.CheckCircle,
-                    contentDescription = if (checked) "Uncheck $title" else "Check $title",
+                    contentDescription = if (checked) stringResource(R.string.cd_uncheck_item, title) else stringResource(R.string.cd_check_item, title),
                     tint = if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -308,50 +310,50 @@ fun buildPermissionItems(context: Context): List<PermissionItem> {
     return listOf(
         PermissionItem(
             type = PermissionType.NotificationAccess,
-            title = "Notification Access",
-            description = "Belirli bildirimleri algılamak için bildirim erişimi",
+            title = context.getString(R.string.permission_notification_access),
+            description = context.getString(R.string.permission_notification_access_desc),
             granted = notificationAccessGranted
         ),
         PermissionItem(
             type = PermissionType.PostNotifications,
-            title = "Post Notifications",
-            description = "PrimeNotify'nin kendi bildirimlerini gösterebilmesi için",
+            title = context.getString(R.string.permission_post_notifications),
+            description = context.getString(R.string.permission_post_notifications_desc),
             granted = postNotificationsGranted
         ),
         PermissionItem(
             type = PermissionType.Camera,
-            title = "Camera / Flash",
-            description = "Flaş pattern çalıştırmak için kamera-flash erişimi",
+            title = context.getString(R.string.permission_camera_flash),
+            description = context.getString(R.string.permission_camera_flash_desc),
             granted = cameraGranted
         ),
         PermissionItem(
             type = PermissionType.WriteSettings,
-            title = "Modify System Settings",
-            description = "AOD ve sistem titreşim/ayar kontrolü için",
+            title = context.getString(R.string.permission_modify_system_settings),
+            description = context.getString(R.string.permission_modify_system_settings_desc),
             granted = writeSettingsGranted
         ),
         PermissionItem(
             type = PermissionType.NotificationPolicy,
-            title = "Notification Policy Access",
-            description = "Zil ve titreşim davranışını değiştirebilmek için",
+            title = context.getString(R.string.permission_notification_policy),
+            description = context.getString(R.string.permission_notification_policy_desc),
             granted = notificationPolicyGranted
         ),
         PermissionItem(
             type = PermissionType.Vibrate,
-            title = "Vibrate",
-            description = "Titreşim motorunu kontrol etmek için",
+            title = context.getString(R.string.permission_vibrate),
+            description = context.getString(R.string.permission_vibrate_desc),
             granted = true
         ),
         PermissionItem(
             type = PermissionType.ModifyAudio,
-            title = "Modify Audio Settings",
-            description = "Mevcut zil/titreşim ayarlarını düzenlemek için",
+            title = context.getString(R.string.permission_modify_audio),
+            description = context.getString(R.string.permission_modify_audio_desc),
             granted = true
         ),
         PermissionItem(
             type = PermissionType.WakeLock,
-            title = "Wake Lock",
-            description = "Ekranı uyandırma senaryoları için",
+            title = context.getString(R.string.permission_wake_lock),
+            description = context.getString(R.string.permission_wake_lock_desc),
             granted = true
         )
     )
@@ -360,8 +362,8 @@ fun buildPermissionItems(context: Context): List<PermissionItem> {
 private fun sendTestNotification(context: Context) {
     val channelId = "primenotify_test_channel_popup"
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val name = "Test Notifications"
-        val descriptionText = "Channel for test notifications"
+        val name = context.getString(R.string.test_notification_channel)
+        val descriptionText = context.getString(R.string.test_notification_channel_desc)
         val importance = android.app.NotificationManager.IMPORTANCE_HIGH
         val channel = android.app.NotificationChannel(channelId, name, importance).apply {
             description = descriptionText
@@ -373,8 +375,8 @@ private fun sendTestNotification(context: Context) {
 
     val builder = NotificationCompat.Builder(context, channelId)
         .setSmallIcon(android.R.drawable.ic_dialog_info)
-        .setContentTitle("PrimeNotify Test")
-        .setContentText("This is a test notification to verify rules.")
+        .setContentTitle(context.getString(R.string.test_notification_title))
+        .setContentText(context.getString(R.string.test_notification_text))
         .setPriority(NotificationCompat.PRIORITY_MAX)
         .setDefaults(NotificationCompat.DEFAULT_ALL)
         .setAutoCancel(true)

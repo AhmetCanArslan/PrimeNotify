@@ -13,7 +13,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.arslan.primenotify.R
 import com.arslan.primenotify.data.RulesManager
 import com.arslan.primenotify.data.WakeUpRule
 
@@ -32,12 +34,12 @@ fun WakeUpScreenSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Wake Up Screen Settings") },
+                title = { Text(stringResource(R.string.wake_up_screen_settings)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.cd_back)
                         )
                     }
                 }
@@ -56,7 +58,7 @@ fun WakeUpScreenSettingsScreen(
             ) {
                 item {
                     Text(
-                        text = "Rules",
+                        text = stringResource(R.string.rules),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 8.dp)
@@ -70,7 +72,7 @@ fun WakeUpScreenSettingsScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "No rules configured.\nTap below to add a new rule.",
+                                text = stringResource(R.string.no_rules_configured_tap_below),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -101,7 +103,7 @@ fun WakeUpScreenSettingsScreen(
                         onClick = { onNavigateToAddEditRule(null) },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Add New Rule")
+                        Text(stringResource(R.string.add_new_rule))
                     }
                 }
             }
@@ -111,8 +113,8 @@ fun WakeUpScreenSettingsScreen(
     if (ruleToDelete != null) {
         AlertDialog(
             onDismissRequest = { ruleToDelete = null },
-            title = { Text("Delete Rule") },
-            text = { Text("Are you sure you want to delete this rule?") },
+            title = { Text(stringResource(R.string.delete_rule)) },
+            text = { Text(stringResource(R.string.confirm_delete_rule)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -125,12 +127,12 @@ fun WakeUpScreenSettingsScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.delete))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { ruleToDelete = null }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -160,23 +162,23 @@ fun WakeUpRuleCard(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = if (rule.appNames.isNotEmpty()) rule.appNames.joinToString(", ") else "No Apps Chosen",
+                    text = if (rule.appNames.isNotEmpty()) rule.appNames.joinToString(", ") else stringResource(R.string.no_apps_chosen),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = if (rule.keywords.isEmpty()) "Keywords: Any" else "Keywords: ${rule.keywords.joinToString()}",
+                    text = if (rule.keywords.isEmpty()) stringResource(R.string.keywords_any) else stringResource(R.string.keywords_format, rule.keywords.joinToString()),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 val applyOnModes = mutableListOf<String>()
-                if (rule.applyOnVibration) applyOnModes.add("Vib")
-                if (rule.applyOnSilent) applyOnModes.add("Sil")
-                if (rule.applyOnDND) applyOnModes.add("DND")
-                val modesText = if (applyOnModes.isEmpty()) "None" else if (applyOnModes.size == 3) "All" else applyOnModes.joinToString(", ")
-                val silentModeText = " · On: $modesText"
+                if (rule.applyOnVibration) applyOnModes.add(stringResource(R.string.vibration))
+                if (rule.applyOnSilent) applyOnModes.add(stringResource(R.string.silence))
+                if (rule.applyOnDND) applyOnModes.add(stringResource(R.string.dnd))
+                val modesText = if (applyOnModes.isEmpty()) stringResource(R.string.mode_none) else if (applyOnModes.size == 3) stringResource(R.string.mode_all) else applyOnModes.joinToString(", ")
+                val silentModeText = stringResource(R.string.mode_on, modesText)
                 Text(
-                    text = "Duration: ${if (rule.screenDurationSeconds == 0) "Default" else "${rule.screenDurationSeconds}s"} · Pocket: ${if (rule.pocketModeEnabled) "On" else "Off"}$silentModeText",
+                    text = stringResource(R.string.duration_default, if (rule.screenDurationSeconds == 0) stringResource(R.string.default_duration) else "${rule.screenDurationSeconds}") + " · " + stringResource(R.string.pocket_mode) + ": " + if (rule.pocketModeEnabled) stringResource(R.string.mode_on_short) else stringResource(R.string.mode_off) + silentModeText,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(top = 4.dp)
@@ -186,14 +188,14 @@ fun WakeUpRuleCard(
                 IconButton(onClick = onEdit) {
                     Icon(
                         imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit Rule",
+                        contentDescription = stringResource(R.string.edit_rule),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
                 IconButton(onClick = onDelete) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete Rule",
+                        contentDescription = stringResource(R.string.delete_rule_desc),
                         tint = MaterialTheme.colorScheme.error
                     )
                 }

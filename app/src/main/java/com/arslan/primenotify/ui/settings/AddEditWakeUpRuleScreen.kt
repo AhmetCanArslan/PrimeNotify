@@ -23,9 +23,11 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.arslan.primenotify.R
 import com.arslan.primenotify.data.RulesManager
 import com.arslan.primenotify.data.WakeUpRule
 import com.arslan.primenotify.data.AppListManager
@@ -74,12 +76,12 @@ fun AddEditWakeUpRuleScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (initialRule != null) "Edit Rule" else "Create Rule") },
+                title = { Text(if (initialRule != null) stringResource(R.string.edit_rule_title) else stringResource(R.string.create_rule_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.cd_back)
                         )
                     }
                 },
@@ -118,7 +120,7 @@ fun AddEditWakeUpRuleScreen(
                         enabled = selectedApps.isNotEmpty(),
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
-                        Text("Save")
+                        Text(stringResource(R.string.save))
                     }
                 }
             )
@@ -147,7 +149,7 @@ fun AddEditWakeUpRuleScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("Trigger Keywords", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.trigger_keywords), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
                     AnimatedVisibility(
                         visible = keywords.isNotEmpty(),
@@ -162,7 +164,7 @@ fun AddEditWakeUpRuleScreen(
                                 AssistChip(
                                     onClick = { keywords = keywords - kw },
                                     label = { Text(kw) },
-                                    trailingIcon = { Icon(Icons.Default.Close, contentDescription = "Remove") },
+                                    trailingIcon = { Icon(Icons.Default.Close, contentDescription = stringResource(R.string.cd_remove)) },
                                     modifier = Modifier.animateItem()
                                 )
                             }
@@ -172,7 +174,7 @@ fun AddEditWakeUpRuleScreen(
                     OutlinedTextField(
                         value = currentKeyword,
                         onValueChange = { currentKeyword = it },
-                        label = { Text("Add Keyword (Optional)") },
+                        label = { Text(stringResource(R.string.add_keyword_optional)) },
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(
@@ -195,7 +197,7 @@ fun AddEditWakeUpRuleScreen(
                                 },
                                 enabled = currentKeyword.isNotBlank()
                             ) {
-                                Icon(Icons.Default.Add, contentDescription = "Add Keyword")
+                                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_add))
                             }
                         }
                     )
@@ -213,7 +215,7 @@ fun AddEditWakeUpRuleScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("Wake Up Settings", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.wake_up_settings), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
                     ExposedDropdownMenuBox(
                         expanded = expandedDuration,
@@ -224,7 +226,7 @@ fun AddEditWakeUpRuleScreen(
                             value = if (screenDurationSeconds == 0) "Default" else "${screenDurationSeconds}s",
                             onValueChange = {},
                             readOnly = true,
-                            label = { Text("Screen Duration") },
+                            label = { Text(stringResource(R.string.screen_duration)) },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDuration) },
                             modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true).fillMaxWidth()
                         )
@@ -234,7 +236,7 @@ fun AddEditWakeUpRuleScreen(
                         ) {
                             durationOptions.forEach { seconds ->
                                 DropdownMenuItem(
-                                    text = { Text(if (seconds == 0) "Default" else "${seconds}s") },
+                                    text = { Text(if (seconds == 0) stringResource(R.string.default_duration) else stringResource(R.string.duration_format, seconds)) },
                                     onClick = {
                                         screenDurationSeconds = seconds
                                         expandedDuration = false
@@ -253,12 +255,12 @@ fun AddEditWakeUpRuleScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                "Pocket Mode", 
+                                stringResource(R.string.pocket_mode), 
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = if (hasProximitySensor) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                             )
                             Text(
-                                if (hasProximitySensor) "Skip wake when phone is in pocket" else "Proximity sensor not available",
+                                if (hasProximitySensor) stringResource(R.string.pocket_mode_desc) else stringResource(R.string.proximity_sensor_unavailable),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (hasProximitySensor) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
                             )
@@ -270,7 +272,7 @@ fun AddEditWakeUpRuleScreen(
                         )
                     }
 
-                    Text("Apply rule on:", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 8.dp))
+                    Text(stringResource(R.string.apply_rule_on), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 8.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -280,21 +282,21 @@ fun AddEditWakeUpRuleScreen(
                             modifier = Modifier.clickable { applyOnVibration = !applyOnVibration }
                         ) {
                             Checkbox(checked = applyOnVibration, onCheckedChange = { applyOnVibration = it })
-                            Text("Vibration", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(end = 8.dp))
+                            Text(stringResource(R.string.vibration), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(end = 8.dp))
                         }
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.clickable { applyOnSilent = !applyOnSilent }
                         ) {
                             Checkbox(checked = applyOnSilent, onCheckedChange = { applyOnSilent = it })
-                            Text("Silence", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(end = 8.dp))
+                            Text(stringResource(R.string.silence), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(end = 8.dp))
                         }
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.clickable { applyOnDND = !applyOnDND }
                         ) {
                             Checkbox(checked = applyOnDND, onCheckedChange = { applyOnDND = it })
-                            Text("DND", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(end = 8.dp))
+                            Text(stringResource(R.string.dnd), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(end = 8.dp))
                         }
                     }
                 }

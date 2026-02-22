@@ -1,0 +1,155 @@
+<resources>
+    <!-- App Name -->
+    <string name="app_name">PrimeNotify</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Ana Sayfa</string>
+    <string name="nav_permissions">İzinler</string>
+    <string name="nav_flash_settings">Flaş Ayarları</string>
+    <string name="nav_wake_up_screen_settings">Ekranı Açma Ayarları</string>
+    <string name="nav_aod_settings">AOD Ayarları</string>
+    <string name="nav_create_pattern">Desen Oluştur</string>
+    <string name="nav_add_edit_flash_rule">Flaş Kuralı Ekle/Düzenle</string>
+    <string name="nav_add_edit_wake_up_rule">Ekran Açma Kuralı Ekle/Düzenle</string>
+    <string name="nav_add_edit_aod_rule">AOD Kuralı Ekle/Düzenle</string>
+
+    <!-- Home Screen -->
+    <string name="service_title">PrimeNotify Servisi</string>
+    <string name="service_active">Aktif</string>
+    <string name="service_disabled">Devre Dışı</string>
+    <string name="flash_pattern_title">Flaş Deseni</string>
+    <string name="flash_pattern_desc">Bildirim metnine göre özel flaş deseni</string>
+    <string name="wake_up_screen_title">Ekranı Aç</string>
+    <string name="wake_up_screen_desc">Eşleşen bildirimi alınca ekranı uyandır</string>
+    <string name="turn_on_aod_title">AOD\'yi Aç</string>
+    <string name="turn_on_aod_desc">Ekran kapalıysa AOD görünümünü aç</string>
+    <string name="send_test_notification">Test Bildirimi Gönder</string>
+    <string name="sending_in_seconds">%1$d saniye içinde gönderiliyor...</string>
+    <string name="cd_settings_for">%1$s için ayarlar</string>
+    <string name="cd_check_item">%1$s işaretle</string>
+    <string name="cd_uncheck_item">%1$s işaretini kaldır</string>
+
+    <!-- Permission Items -->
+    <string name="permission_notification_access">Bildirim Erişimi</string>
+    <string name="permission_notification_access_desc">Belirli bildirimleri algılamak için bildirim erişimi</string>
+    <string name="permission_post_notifications">Bildirim Gönderme</string>
+    <string name="permission_post_notifications_desc">PrimeNotify\'nin kendi bildirimlerini gösterebilmesi için</string>
+    <string name="permission_camera_flash">Kamera / Flaş</string>
+    <string name="permission_camera_flash_desc">Flaş deseni çalıştırmak için kamera-flaş erişimi</string>
+    <string name="permission_modify_system_settings">Sistem Ayarlarını Değiştir</string>
+    <string name="permission_modify_system_settings_desc">AOD ve sistem titreşim/ayar kontrolü için</string>
+    <string name="permission_notification_policy">Bildirim Politikası Erişimi</string>
+    <string name="permission_notification_policy_desc">Zil ve titreşim davranışını değiştirebilmek için</string>
+    <string name="permission_vibrate">Titreşim</string>
+    <string name="permission_vibrate_desc">Titreşim motorunu kontrol etmek için</string>
+    <string name="permission_modify_audio">Ses Ayarlarını Değiştir</string>
+    <string name="permission_modify_audio_desc">Mevcut zil/titreşim ayarlarını düzenlemek için</string>
+    <string name="permission_wake_lock">Ekran Kilidi Açma</string>
+    <string name="permission_wake_lock_desc">Ekranı uyandırma senaryoları için</string>
+    <string name="permission_run_background">Arka Planda Çalış</string>
+    <string name="permission_run_background_desc">Hizmetin pil tasarrufu tarafından kapatılmasını önler</string>
+    <string name="permission_secure_settings">Güvenli Ayarlar (AOD)</string>
+    <string name="permission_secure_settings_desc">AOD ayarını değiştirebilmek için ADB izni gerekir</string>
+
+    <!-- Permission Screen -->
+    <string name="permission_granted">İzin Verildi</string>
+    <string name="permission_grant">İzin Ver</string>
+    <string name="grant_secure_settings_title">Güvenli Ayarları Etkinleştir</string>
+    <string name="grant_secure_settings_desc">Always-On Display\'yi açmak için PrimeNotify\'nin WRITE_SECURE_SETTINGS iznine ihtiyacı var.</string>
+    <string name="grant_secure_settings_adb_info">Bu bir sistem izni olduğundan, bir bilgisayarda ADB üzerinden verilmelidir. Terminalinizi veya komut istemcinizi açın ve şunu çalıştırın:</string>
+    <string name="command_copied">Komut panoya kopyalandı</string>
+    <string name="copy">KOPYALA</string>
+    <string name="got_it">Anladım</string>
+    <string name="close">Kapat</string>
+
+    <!-- Test Notification -->
+    <string name="test_notification_channel">Test Bildirimleri</string>
+    <string name="test_notification_channel_desc">Test bildirimleri için kanal</string>
+    <string name="test_notification_title">PrimeNotify Test</string>
+    <string name="test_notification_text">Kuralları doğrulamak için bu bir test bildirimidir.</string>
+
+    <!-- Settings Screens -->
+    <string name="flash_pattern_settings">Flaş Deseni Ayarları</string>
+    <string name="wake_up_screen_settings">Ekranı Açma Ayarları</string>
+    <string name="aod_settings">AOD Ayarları</string>
+    <string name="back">Geri</string>
+    <string name="rules">Kurallar</string>
+    <string name="no_rules_configured">Yapılandırılmış kural yok.\nYeni kural eklemek için +\'ya dokunun.</string>
+    <string name="no_rules_configured_tap_below">Yapılandırılmış kural yok.\nYeni kural eklemek için aşağıya dokunun.</string>
+    <string name="add_new_rule">Yeni Kural Ekle</string>
+    <string name="custom_patterns">Özel Desenler</string>
+    <string name="delete_pattern">Deseni Sil</string>
+    <string name="delete_rule">Kuralı Sil</string>
+    <string name="delete">Sil</string>
+    <string name="cancel">İptal</string>
+    <string name="confirm_delete_rule">Bu kuralı silmek istediğinizden emin misiniz?</string>
+    <string name="confirm_delete_pattern">\'%1$s\' desenini silmek istediğinizden emin misiniz?\nKullanan kurallar varsayılana sıfırlanacaktır.</string>
+    <string name="no_apps_chosen">Uygulama Seçilmedi</string>
+    <string name="keywords_any">Anahtar Kelimeler: Tümü</string>
+    <string name="keywords_format">Anahtar Kelimeler: %1$s</string>
+    <string name="pattern_unknown">Desen: Bilinmiyor</string>
+    <string name="pattern_format">Desen: %1$s</string>
+    <string name="unknown">Bilinmiyor</string>
+    <string name="mode_on">Açık: %1$s</string>
+    <string name="mode_none">Yok</string>
+    <string name="mode_all">Tümü</string>
+    <string name="edit_rule">Kuralı Düzenle</string>
+    <string name="delete_rule_desc">Kuralı Sil</string>
+    <string name="create_custom_pattern">Özel Desen Oluştur</string>
+
+    <!-- Add/Edit Rule Screen -->
+    <string name="edit_rule_title">Kuralı Düzenle</string>
+    <string name="create_rule_title">Kural Oluştur</string>
+    <string name="edit_aod_rule_title">AOD Kuralını Düzenle</string>
+    <string name="create_aod_rule_title">AOD Kuralı Oluştur</string>
+    <string name="save">Kaydet</string>
+    <string name="trigger_keywords">Tetikleyici Anahtar Kelimeler</string>
+    <string name="remove">Kaldır</string>
+    <string name="add_keyword_optional">Anahtar Kelime Ekle (İsteğe Bağlı)</string>
+    <string name="add_keyword">Anahtar Kelime Ekle</string>
+    <string name="flash_pattern">Flaş Deseni</string>
+    <string name="select_pattern">Desen Seç</string>
+    <string name="unknown_custom">Bilinmeyen Özel</string>
+    <string name="apply_rule_on">Kuralı uygula:</string>
+    <string name="vibration">Titreşim</string>
+    <string name="silence">Sessiz</string>
+    <string name="dnd">Rahatsız Etmeyin</string>
+
+    <!-- Wake Up Settings -->
+    <string name="wake_up_settings">Ekranı Açma Ayarları</string>
+    <string name="screen_duration">Ekran Süresi</string>
+    <string name="default_duration">Varsayılan</string>
+    <string name="duration_format">%1$d sn</string>
+    <string name="pocket_mode">Cep Modu</string>
+    <string name="pocket_mode_desc">Telefon ceptesken açmayı atla</string>
+    <string name="proximity_sensor_unavailable">Yakınlık sensörü mevcut değil</string>
+    <string name="duration_default">%1$d sn</string>
+    <string name="mode_on_short">Açık</string>
+    <string name="mode_off">Kapalı</string>
+
+    <!-- AOD Settings -->
+    <string name="always_on_display_settings">Always-On Ekran Ayarları</string>
+    <string name="aod_duration">AOD Süresi</string>
+    <string name="until_dismiss_notification">Bildirim kapatılana kadar</string>
+    <string name="until_unlocking_phone">Telefon kilidi açılana kadar</string>
+    <string name="duration_seconds">Süre: %1$d sn</string>
+
+    <!-- Create Pattern Screen -->
+    <string name="create_pattern">Desen Oluştur</string>
+    <string name="recording_format">Kayıt yapılıyor... %1$d.%2$d sn</string>
+    <string name="press_start_record">Kayıt için Başlat\'a basın (Maks 5 sn)</string>
+    <string name="tap_hold">DOKUN/BASILI TUT</string>
+    <string name="flash">FLAŞ</string>
+    <string name="start">Başlat</string>
+    <string name="stop">Durdur</string>
+    <string name="save_pattern">Deseni Kaydet</string>
+    <string name="pattern_name">Desen Adı</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_back">Geri git</string>
+    <string name="cd_settings">Ayarlar</string>
+    <string name="cd_delete">Sil</string>
+    <string name="cd_edit">Düzenle</string>
+    <string name="cd_add">Ekle</string>
+    <string name="cd_remove">Kaldır</string>
+</resources>

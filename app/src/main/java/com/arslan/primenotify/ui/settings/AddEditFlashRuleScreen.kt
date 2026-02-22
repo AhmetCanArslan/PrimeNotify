@@ -23,9 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.arslan.primenotify.R
 import com.arslan.primenotify.data.FlashPattern
 import com.arslan.primenotify.data.FlashRule
 import com.arslan.primenotify.data.RulesManager
@@ -70,12 +72,12 @@ fun AddEditFlashRuleScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (initialRule != null) "Edit Rule" else "Create Rule") },
+                title = { Text(if (initialRule != null) stringResource(R.string.edit_rule_title) else stringResource(R.string.create_rule_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.cd_back)
                         )
                     }
                 },
@@ -116,7 +118,7 @@ fun AddEditFlashRuleScreen(
                         enabled = selectedApps.isNotEmpty(),
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
-                        Text("Save")
+                        Text(stringResource(R.string.save))
                     }
                 }
             )
@@ -145,7 +147,7 @@ fun AddEditFlashRuleScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("Trigger Keywords", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.trigger_keywords), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     
                     AnimatedVisibility(
                         visible = keywords.isNotEmpty(),
@@ -160,7 +162,7 @@ fun AddEditFlashRuleScreen(
                                 AssistChip(
                                     onClick = { keywords = keywords - kw },
                                     label = { Text(kw) },
-                                    trailingIcon = { Icon(Icons.Default.Close, contentDescription = "Remove") },
+                                    trailingIcon = { Icon(Icons.Default.Close, contentDescription = stringResource(R.string.cd_remove)) },
                                     modifier = Modifier.animateItem()
                                 )
                             }
@@ -170,7 +172,7 @@ fun AddEditFlashRuleScreen(
                     OutlinedTextField(
                         value = currentKeyword,
                         onValueChange = { currentKeyword = it },
-                        label = { Text("Add Keyword (Optional)") },
+                        label = { Text(stringResource(R.string.add_keyword_optional)) },
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(
@@ -193,7 +195,7 @@ fun AddEditFlashRuleScreen(
                                 },
                                 enabled = currentKeyword.isNotBlank()
                             ) {
-                                Icon(Icons.Default.Add, contentDescription = "Add Keyword")
+                                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_add))
                             }
                         }
                     )
@@ -211,7 +213,7 @@ fun AddEditFlashRuleScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("Flash Pattern", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.flash_pattern), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     
                     ExposedDropdownMenuBox(
                         expanded = expandedPatterns,
@@ -220,13 +222,13 @@ fun AddEditFlashRuleScreen(
                     ) {
                         OutlinedTextField(
                             value = if (selectedCustomPatternId != null) {
-                                customPatterns.find { it.id == selectedCustomPatternId }?.name ?: "Unknown Custom"
+                                customPatterns.find { it.id == selectedCustomPatternId }?.name ?: stringResource(R.string.unknown_custom)
                             } else {
                                 selectedStandardPattern.displayName
                             },
                             onValueChange = {},
                             readOnly = true,
-                            label = { Text("Select Pattern") },
+                            label = { Text(stringResource(R.string.select_pattern)) },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPatterns) },
                             modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true).fillMaxWidth()
                         )
@@ -259,7 +261,7 @@ fun AddEditFlashRuleScreen(
                         }
                     }
 
-                    Text("Apply rule on:", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 8.dp))
+                    Text(stringResource(R.string.apply_rule_on), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 8.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -269,21 +271,21 @@ fun AddEditFlashRuleScreen(
                             modifier = Modifier.clickable { applyOnVibration = !applyOnVibration }
                         ) {
                             Checkbox(checked = applyOnVibration, onCheckedChange = { applyOnVibration = it })
-                            Text("Vibration", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(end = 8.dp))
+                            Text(stringResource(R.string.vibration), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(end = 8.dp))
                         }
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.clickable { applyOnSilent = !applyOnSilent }
                         ) {
                             Checkbox(checked = applyOnSilent, onCheckedChange = { applyOnSilent = it })
-                            Text("Silence", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(end = 8.dp))
+                            Text(stringResource(R.string.silence), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(end = 8.dp))
                         }
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.clickable { applyOnDND = !applyOnDND }
                         ) {
                             Checkbox(checked = applyOnDND, onCheckedChange = { applyOnDND = it })
-                            Text("DND", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(end = 8.dp))
+                            Text(stringResource(R.string.dnd), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(end = 8.dp))
                         }
                     }
                 }

@@ -19,6 +19,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -34,23 +35,24 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.arslan.primenotify.R
 import com.arslan.primenotify.ui.home.HomeScreen
 import com.arslan.primenotify.ui.permissions.PermissionsScreen
 
-sealed class Screen(val route: String, val label: String) {
-    data object Home : Screen("home", "Home")
-    data object Permissions : Screen("permissions", "Permissions")
-    data object FlashSettings : Screen("flash_settings", "Flash Settings")
-    data object WakeUpScreenSettings : Screen("wake_up_screen_settings", "Wake Up Screen Settings")
-    data object AODSettings : Screen("aod_settings", "AOD Settings")
-    data object CreatePattern : Screen("create_pattern", "Create Pattern")
-    data object AddEditFlashRule : Screen("add_edit_flash_rule/{ruleId}", "Add/Edit Flash Rule") {
+sealed class Screen(val route: String, val labelResId: Int) {
+    data object Home : Screen("home", com.arslan.primenotify.R.string.nav_home)
+    data object Permissions : Screen("permissions", com.arslan.primenotify.R.string.nav_permissions)
+    data object FlashSettings : Screen("flash_settings", com.arslan.primenotify.R.string.nav_flash_settings)
+    data object WakeUpScreenSettings : Screen("wake_up_screen_settings", com.arslan.primenotify.R.string.nav_wake_up_screen_settings)
+    data object AODSettings : Screen("aod_settings", com.arslan.primenotify.R.string.nav_aod_settings)
+    data object CreatePattern : Screen("create_pattern", com.arslan.primenotify.R.string.nav_create_pattern)
+    data object AddEditFlashRule : Screen("add_edit_flash_rule/{ruleId}", com.arslan.primenotify.R.string.nav_add_edit_flash_rule) {
         fun createRoute(ruleId: String?) = "add_edit_flash_rule/${ruleId ?: "new"}"
     }
-    data object AddEditWakeUpRule : Screen("add_edit_wake_up_rule/{ruleId}", "Add/Edit Wake Up Rule") {
+    data object AddEditWakeUpRule : Screen("add_edit_wake_up_rule/{ruleId}", com.arslan.primenotify.R.string.nav_add_edit_wake_up_rule) {
         fun createRoute(ruleId: String?) = "add_edit_wake_up_rule/${ruleId ?: "new"}"
     }
-    data object AddEditAodRule : Screen("add_edit_aod_rule/{ruleId}", "Add/Edit AOD Rule") {
+    data object AddEditAodRule : Screen("add_edit_aod_rule/{ruleId}", com.arslan.primenotify.R.string.nav_add_edit_aod_rule) {
         fun createRoute(ruleId: String?) = "add_edit_aod_rule/${ruleId ?: "new"}"
     }
 }
@@ -211,7 +213,7 @@ fun MainFlowScreen(rootNavController: NavController) {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "PrimeNotify",
+                        text = stringResource(R.string.app_name),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -224,8 +226,8 @@ fun MainFlowScreen(rootNavController: NavController) {
                 val currentRoute = currentBackStackEntry.value?.destination?.route
 
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                    label = { Text("Home") },
+                    icon = { Icon(Icons.Default.Home, contentDescription = stringResource(R.string.cd_settings)) },
+                    label = { Text(stringResource(R.string.nav_home)) },
                     selected = currentRoute == Screen.Home.route,
                     onClick = {
                         bottomNavController.navigate(Screen.Home.route) {
@@ -238,8 +240,8 @@ fun MainFlowScreen(rootNavController: NavController) {
                 )
 
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Permissions") },
-                    label = { Text("Permissions") },
+                    icon = { Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.nav_permissions)) },
+                    label = { Text(stringResource(R.string.nav_permissions)) },
                     selected = currentRoute == Screen.Permissions.route,
                     onClick = {
                         bottomNavController.navigate(Screen.Permissions.route) {

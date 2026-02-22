@@ -46,6 +46,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.TextStyle
@@ -56,6 +57,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.arslan.primenotify.R
 import com.arslan.primenotify.ui.theme.PrimeNotifyTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -139,7 +141,7 @@ fun PermissionsScreen(modifier: Modifier = Modifier) {
                             border = BorderStroke(1.dp, Color(0xFF4CAF50)),
                             enabled = false
                         ) {
-                            Text("Granted")
+                            Text(stringResource(R.string.permission_granted))
                         }
                     } else {
                         Button(
@@ -187,7 +189,7 @@ fun PermissionsScreen(modifier: Modifier = Modifier) {
                                 }
                             }
                         ) {
-                            Text("Grant")
+                            Text(stringResource(R.string.permission_grant))
                         }
                     }
                 }
@@ -200,7 +202,7 @@ fun PermissionsScreen(modifier: Modifier = Modifier) {
             onDismissRequest = { showAdbDialog = false },
             title = { 
                 Text(
-                    "Grant Secure Settings", 
+                    stringResource(R.string.grant_secure_settings_title), 
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 ) 
@@ -208,11 +210,11 @@ fun PermissionsScreen(modifier: Modifier = Modifier) {
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     Text(
-                        "To toggle Always-On Display, PrimeNotify needs the WRITE_SECURE_SETTINGS permission.",
+                        stringResource(R.string.grant_secure_settings_desc),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        "Since this is a system permission, it must be granted via ADB on a computer. Open your terminal or command prompt and run:",
+                        stringResource(R.string.grant_secure_settings_adb_info),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -242,10 +244,10 @@ fun PermissionsScreen(modifier: Modifier = Modifier) {
                                     val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                     val clip = ClipData.newPlainText("ADB Command", adbCommand)
                                     clipboardManager.setPrimaryClip(clip)
-                                    Toast.makeText(context, "Command copied to clipboard", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, context.getString(R.string.command_copied), Toast.LENGTH_SHORT).show()
                                 }
                             ) {
-                                Text("COPY")
+                                Text(stringResource(R.string.copy))
                             }
                         }
                     }
@@ -253,12 +255,12 @@ fun PermissionsScreen(modifier: Modifier = Modifier) {
             },
             confirmButton = {
                 Button(onClick = { showAdbDialog = false }) {
-                    Text("Got It")
+                    Text(stringResource(R.string.got_it))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showAdbDialog = false }) {
-                    Text("Close")
+                    Text(stringResource(R.string.close))
                 }
             }
         )
@@ -318,44 +320,44 @@ private fun buildPermissionItems(context: Context): List<PermissionItem> {
     return listOf(
         PermissionItem(
             type = PermissionType.NotificationAccess,
-            title = "Notification Access",
-            description = "Belirli bildirimleri algılamak için bildirim erişimi",
+            title = context.getString(R.string.permission_notification_access),
+            description = context.getString(R.string.permission_notification_access_desc),
             granted = notificationAccessGranted
         ),
         PermissionItem(
             type = PermissionType.PostNotifications,
-            title = "Post Notifications",
-            description = "PrimeNotify'nin kendi bildirimlerini gösterebilmesi için",
+            title = context.getString(R.string.permission_post_notifications),
+            description = context.getString(R.string.permission_post_notifications_desc),
             granted = postNotificationsGranted
         ),
         PermissionItem(
             type = PermissionType.Camera,
-            title = "Camera / Flash",
-            description = "Flaş pattern çalıştırmak için kamera-flash erişimi",
+            title = context.getString(R.string.permission_camera_flash),
+            description = context.getString(R.string.permission_camera_flash_desc),
             granted = cameraGranted
         ),
         PermissionItem(
             type = PermissionType.WriteSettings,
-            title = "Modify System Settings",
-            description = "AOD ve sistem titreşim/ayar kontrolü için",
+            title = context.getString(R.string.permission_modify_system_settings),
+            description = context.getString(R.string.permission_modify_system_settings_desc),
             granted = writeSettingsGranted
         ),
         PermissionItem(
             type = PermissionType.NotificationPolicy,
-            title = "Notification Policy Access",
-            description = "Zil ve titreşim davranışını değiştirebilmek için",
+            title = context.getString(R.string.permission_notification_policy),
+            description = context.getString(R.string.permission_notification_policy_desc),
             granted = notificationPolicyGranted
         ),
         PermissionItem(
             type = PermissionType.IgnoreBatteryOptimizations,
-            title = "Run in Background",
-            description = "Hizmetin pil tasarrufu tarafından kapatılmasını önler",
+            title = context.getString(R.string.permission_run_background),
+            description = context.getString(R.string.permission_run_background_desc),
             granted = ignoreBatteryOptimizationsGranted
         ),
         PermissionItem(
             type = PermissionType.WriteSecureSettings,
-            title = "Secure Settings (AOD)",
-            description = "AOD ayarını değiştirebilmek için ADB izni gerekir",
+            title = context.getString(R.string.permission_secure_settings),
+            description = context.getString(R.string.permission_secure_settings_desc),
             granted = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED
         )
     )
