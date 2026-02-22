@@ -9,6 +9,9 @@ import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -30,6 +33,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -41,6 +47,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -187,15 +195,70 @@ fun PermissionsScreen(modifier: Modifier = Modifier) {
         }
     
     if (showAdbDialog) {
+        val adbCommand = "adb shell pm grant ${context.packageName} android.permission.WRITE_SECURE_SETTINGS"
         AlertDialog(
             onDismissRequest = { showAdbDialog = false },
-            title = { Text("Grant Secure Settings Permission") },
+            title = { 
+                Text(
+                    "Grant Secure Settings", 
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                ) 
+            },
             text = {
-                Text("To toggle Always-On Display, PrimeNotify needs the WRITE_SECURE_SETTINGS permission. Since this is a system permission, it must be granted via ADB on a computer:\n\nadb shell pm grant ${context.packageName} android.permission.WRITE_SECURE_SETTINGS")
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Text(
+                        "To toggle Always-On Display, PrimeNotify needs the WRITE_SECURE_SETTINGS permission.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        "Since this is a system permission, it must be granted via ADB on a computer. Open your terminal or command prompt and run:",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = adbCommand,
+                                style = TextStyle(
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                modifier = Modifier.weight(1f)
+                            )
+                            TextButton(
+                                onClick = {
+                                    val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clip = ClipData.newPlainText("ADB Command", adbCommand)
+                                    clipboardManager.setPrimaryClip(clip)
+                                    Toast.makeText(context, "Command copied to clipboard", Toast.LENGTH_SHORT).show()
+                                }
+                            ) {
+                                Text("COPY")
+                            }
+                        }
+                    }
+                }
             },
             confirmButton = {
+                Button(onClick = { showAdbDialog = false }) {
+                    Text("Got It")
+                }
+            },
+            dismissButton = {
                 TextButton(onClick = { showAdbDialog = false }) {
-                    Text("OK")
+                    Text("Close")
                 }
             }
         )
