@@ -177,8 +177,9 @@ fun WakeUpRuleCard(
                 if (rule.applyOnDND) applyOnModes.add(stringResource(R.string.dnd))
                 val modesText = if (applyOnModes.isEmpty()) stringResource(R.string.mode_none) else if (applyOnModes.size == 3) stringResource(R.string.mode_all) else applyOnModes.joinToString(", ")
                 val silentModeText = stringResource(R.string.mode_on, modesText)
+                val durationText = if (rule.screenDurationSeconds == 0) stringResource(R.string.default_duration) else stringResource(R.string.duration_default, rule.screenDurationSeconds)
                 Text(
-                    text = stringResource(R.string.duration_default, if (rule.screenDurationSeconds == 0) stringResource(R.string.default_duration) else "${rule.screenDurationSeconds}") + " · " + stringResource(R.string.pocket_mode) + ": " + if (rule.pocketModeEnabled) stringResource(R.string.mode_on_short) else stringResource(R.string.mode_off) + silentModeText,
+                    text = durationText + " · " + stringResource(R.string.pocket_mode) + ": " + if (rule.pocketModeEnabled) stringResource(R.string.mode_on_short) else stringResource(R.string.mode_off) + silentModeText,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(top = 4.dp)
