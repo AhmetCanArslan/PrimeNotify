@@ -152,4 +152,12 @@
     <string name="cd_edit">Edit</string>
     <string name="cd_add">Add</string>
     <string name="cd_remove">Remove</string>
+    <string name="cd_clear_search">Clear search</string>
+    <string name="cd_swap_apps">Swap Apps</string>
+
+    <!-- App Selection -->
+    <string name="target_apps">Target Apps</string>
+    <string name="search_apps">Search apps…</string>
+    <string name="available">Available</string>
+    <string name="selected">Selected</string>
 </resources>

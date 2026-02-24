@@ -11,10 +11,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,9 +26,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.arslan.primenotify.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -143,6 +151,8 @@ fun AppSelectionTable(
     modifier: Modifier = Modifier
 ) {
     val isLoading = installedApps.isEmpty()
+    val focusManager = LocalFocusManager.current
+    var searchQuery by remember { mutableStateOf("") }
 
     // Pre-compute set for O(1) lookups instead of O(n) list contains
     val selectedPackages = remember(selectedApps) {
@@ -150,6 +160,16 @@ fun AppSelectionTable(
     }
     val unselectedApps = remember(installedApps, selectedPackages) {
         installedApps.filter { it.packageName !in selectedPackages }
+    }
+
+    // Filter apps based on search query
+    val filteredUnselectedApps = remember(unselectedApps, searchQuery) {
+        if (searchQuery.isBlank()) unselectedApps
+        else unselectedApps.filter { it.name.contains(searchQuery, ignoreCase = true) }
+    }
+    val filteredSelectedApps = remember(selectedApps, searchQuery) {
+        if (searchQuery.isBlank()) selectedApps
+        else selectedApps.filter { it.name.contains(searchQuery, ignoreCase = true) }
     }
 
     Card(
@@ -162,7 +182,39 @@ fun AppSelectionTable(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text("Target Apps", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.target_apps), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+
+            // Search Box
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text(stringResource(R.string.search_apps)) },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null
+                    )
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { 
+                            searchQuery = ""
+                            focusManager.clearFocus()
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = stringResource(R.string.cd_clear_search)
+                            )
+                        }
+                    }
+                },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(
+                    onDone = { focusManager.clearFocus() }
+                )
+            )
 
             if (isLoading) {
                 Box(
@@ -175,9 +227,9 @@ fun AppSelectionTable(
                 Row(modifier = Modifier.weight(1f).fillMaxWidth()) {
                     // Left Column — Available
                     Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                        Text("Available", fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 8.dp), style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(R.string.available), fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 8.dp), style = MaterialTheme.typography.bodyMedium)
                         LazyColumn(modifier = Modifier.weight(1f)) {
-                            items(unselectedApps, key = { it.packageName }, contentType = { "app" }) { app ->
+                            items(filteredUnselectedApps, key = { it.packageName }, contentType = { "app" }) { app ->
                                 AppRow(
                                     app = app,
                                     actionIcon = Icons.Default.Add,
@@ -198,20 +250,20 @@ fun AppSelectionTable(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Selected", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
+                            Text(stringResource(R.string.selected), fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
                             IconButton(
                                 onClick = { onSelectedAppsChanged(unselectedApps) },
                                 modifier = Modifier.size(24.dp)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Refresh,
-                                    contentDescription = "Swap Apps",
+                                    contentDescription = stringResource(R.string.cd_swap_apps),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
                         }
                         LazyColumn(modifier = Modifier.weight(1f)) {
-                            items(selectedApps, key = { it.packageName }, contentType = { "app" }) { app ->
+                            items(filteredSelectedApps, key = { it.packageName }, contentType = { "app" }) { app ->
                                 AppRow(
                                     app = app,
                                     actionIcon = Icons.Default.Check,

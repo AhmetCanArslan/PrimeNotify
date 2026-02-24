@@ -152,4 +152,12 @@
     <string name="cd_edit">Düzenle</string>
     <string name="cd_add">Ekle</string>
     <string name="cd_remove">Kaldır</string>
+    <string name="cd_clear_search">Aramayı temizle</string>
+    <string name="cd_swap_apps">Uygulamaları Değiştir</string>
+
+    <!-- App Selection -->
+    <string name="target_apps">Hedef Uygulamalar</string>
+    <string name="search_apps">Uygulama ara…</string>
+    <string name="available">Mevcut</string>
+    <string name="selected">Seçili</string>
 </resources>
