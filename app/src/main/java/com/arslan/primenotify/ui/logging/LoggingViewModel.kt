@@ -5,6 +5,9 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.arslan.primenotify.data.AppListManager
+import com.arslan.primenotify.data.IgnoreManager
+import com.arslan.primenotify.data.IgnoreRule
+import com.arslan.primenotify.data.IgnoreType
 import com.arslan.primenotify.data.LogEntry
 import com.arslan.primenotify.data.LoggingManager
 import com.arslan.primenotify.data.RuleType
@@ -18,6 +21,7 @@ import kotlinx.coroutines.withContext
 class LoggingViewModel(application: Application) : AndroidViewModel(application) {
 
     private val loggingManager = LoggingManager(application)
+    private val ignoreManager = IgnoreManager(application)
 
     private val _filter = MutableStateFlow<RuleType?>(null)
     val filter: StateFlow<RuleType?> = _filter.asStateFlow()
@@ -30,6 +34,28 @@ class LoggingViewModel(application: Application) : AndroidViewModel(application)
 
     init {
         refreshLogs()
+    }
+
+    fun ignoreEntry(entry: LogEntry, type: IgnoreType) {
+        val rule = when (type) {
+            IgnoreType.APP -> IgnoreRule(
+                type = IgnoreType.APP,
+                packageName = entry.packageName
+            )
+            IgnoreType.TITLE -> IgnoreRule(
+                type = IgnoreType.TITLE,
+                packageName = entry.packageName,
+                matchValue = entry.title
+            )
+            IgnoreType.BODY -> IgnoreRule(
+                type = IgnoreType.BODY,
+                packageName = entry.packageName,
+                matchValue = entry.body
+            )
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            ignoreManager.addRule(rule)
+        }
     }
 
     fun setFilter(type: RuleType?) {

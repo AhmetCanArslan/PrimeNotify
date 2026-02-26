@@ -24,13 +24,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -58,11 +62,11 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.arslan.primenotify.R
+import com.arslan.primenotify.data.IgnoreType
 import com.arslan.primenotify.data.LogEntry
 import com.arslan.primenotify.data.MatchedRuleInfo
 import com.arslan.primenotify.data.RuleType
 import android.content.Context
-import androidx.core.graphics.drawable.toBitmap
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -78,6 +82,7 @@ fun LoggingScreen(
     val filter by viewModel.filter.collectAsState()
     val iconCache by viewModel.iconCache.collectAsState()
     var showClearDialog by remember { mutableStateOf(false) }
+    var ignoreTarget by remember { mutableStateOf<LogEntry?>(null) }
 
     Scaffold(
         topBar = {
@@ -93,8 +98,11 @@ fun LoggingScreen(
                 },
                 actions = {
                     if (logs.isNotEmpty()) {
-                        TextButton(onClick = { showClearDialog = true }) {
-                            Text(stringResource(R.string.logs_clear))
+                        IconButton(onClick = { showClearDialog = true }) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = stringResource(R.string.logs_clear)
+                            )
                         }
                     }
                 }
@@ -155,7 +163,11 @@ fun LoggingScreen(
                     )
                 ) {
                     items(logs, key = { it.id }) { entry ->
-                        LogItem(entry = entry, icon = iconCache[entry.packageName])
+                        LogItem(
+                            entry = entry,
+                            icon = iconCache[entry.packageName],
+                            onIgnoreClick = { ignoreTarget = entry }
+                        )
                     }
                 }
             }
@@ -190,11 +202,93 @@ fun LoggingScreen(
             }
         )
     }
+
+    // Ignore dialog
+    ignoreTarget?.let { entry ->
+        AlertDialog(
+            onDismissRequest = { ignoreTarget = null },
+            title = {
+                Text(
+                    text = stringResource(R.string.logs_ignore_dialog_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        stringResource(R.string.logs_ignore_dialog_body),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    // By App
+                    Button(
+                        onClick = {
+                            viewModel.ignoreEntry(entry, IgnoreType.APP)
+                            ignoreTarget = null
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.logs_ignore_by_app, entry.appName))
+                    }
+                    // By Header
+                    if (entry.title.isNotBlank()) {
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 2.dp))
+                        Button(
+                            onClick = {
+                                viewModel.ignoreEntry(entry, IgnoreType.TITLE)
+                                ignoreTarget = null
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        ) {
+                            Text(
+                                text = stringResource(R.string.logs_ignore_by_header, entry.title),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                    // By Description
+                    if (entry.body.isNotBlank()) {
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 2.dp))
+                        Button(
+                            onClick = {
+                                viewModel.ignoreEntry(entry, IgnoreType.BODY)
+                                ignoreTarget = null
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                        ) {
+                            Text(
+                                text = stringResource(R.string.logs_ignore_by_description, entry.body),
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { ignoreTarget = null }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun LogItem(entry: LogEntry, icon: ImageBitmap?) {
+private fun LogItem(entry: LogEntry, icon: ImageBitmap?, onIgnoreClick: () -> Unit) {
     val context = LocalContext.current
 
     Card(
@@ -250,6 +344,18 @@ private fun LogItem(entry: LogEntry, icon: ImageBitmap?) {
                         text = formatTimestamp(context, entry.timestamp),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                IconButton(
+                    onClick = onIgnoreClick,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.NotificationsOff,
+                        contentDescription = stringResource(R.string.cd_ignore_notification),
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

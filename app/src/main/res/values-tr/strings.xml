@@ -179,6 +179,12 @@
     <string name="logs_title">Bildirim Günlükleri</string>
     <string name="logs_empty">Henüz günlük yok.\nGünlükler, bir kural eşleştiğinde görünür.</string>
     <string name="logs_clear">Temizle</string>
+    <string name="logs_ignore_dialog_title">Bildirimi yoksay</string>
+    <string name="logs_ignore_dialog_body">Bu kriterlere uyan gelecekteki bildirimler yoksayılacak:</string>
+    <string name="logs_ignore_by_app">Uygulama: %1$s</string>
+    <string name="logs_ignore_by_header">Başlık: "%1$s"</string>
+    <string name="logs_ignore_by_description">Açıklama: "%1$s"</string>
+    <string name="cd_ignore_notification">Bildirimi yoksay</string>
     <string name="logs_clear_confirm_title">Tüm günlükler temizlensin mi?</string>
     <string name="logs_clear_confirm_body">Bu işlem %1$d günlük girişini kalıcı olarak siler.</string>
     <string name="logs_filter_all">Tümü</string>

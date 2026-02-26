@@ -179,6 +179,12 @@
     <string name="logs_title">Notification Logs</string>
     <string name="logs_empty">No logs yet.\nLogs appear when a notification matches a rule.</string>
     <string name="logs_clear">Clear</string>
+    <string name="logs_ignore_dialog_title">Ignore notification</string>
+    <string name="logs_ignore_dialog_body">Future notifications matching this will be ignored:</string>
+    <string name="logs_ignore_by_app">App: %1$s</string>
+    <string name="logs_ignore_by_header">Header: "%1$s"</string>
+    <string name="logs_ignore_by_description">Description: "%1$s"</string>
+    <string name="cd_ignore_notification">Ignore notification</string>
     <string name="logs_clear_confirm_title">Clear all logs?</string>
     <string name="logs_clear_confirm_body">This will permanently delete all %1$d log entries.</string>
     <string name="logs_filter_all">All</string>

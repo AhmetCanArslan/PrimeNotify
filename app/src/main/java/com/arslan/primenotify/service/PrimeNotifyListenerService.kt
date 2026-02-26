@@ -11,6 +11,7 @@ import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
 import com.arslan.primenotify.R
 import com.arslan.primenotify.data.FlashPattern
+import com.arslan.primenotify.data.IgnoreManager
 import com.arslan.primenotify.data.LoggingManager
 import com.arslan.primenotify.data.MatchedRuleInfo
 import com.arslan.primenotify.data.RuleType
@@ -19,6 +20,7 @@ import com.arslan.primenotify.data.RulesManager
 class PrimeNotifyListenerService : NotificationListenerService() {
 
     private lateinit var rulesManager: RulesManager
+    private lateinit var ignoreManager: IgnoreManager
     private lateinit var flashManager: FlashManager
     private lateinit var screenWakeManager: ScreenWakeManager
     private lateinit var aodManager: AodManager
@@ -27,6 +29,7 @@ class PrimeNotifyListenerService : NotificationListenerService() {
     override fun onCreate() {
         super.onCreate()
         rulesManager = RulesManager(this)
+        ignoreManager = IgnoreManager(this)
         flashManager = FlashManager(this)
         screenWakeManager = ScreenWakeManager(this)
         aodManager = AodManager(this)
@@ -51,6 +54,14 @@ class PrimeNotifyListenerService : NotificationListenerService() {
         val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
         val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
         val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString() ?: ""
+        val bodyRaw = bigText.ifBlank { text }
+
+        // Skip notification entirely if it matches an ignore rule
+        if (ignoreManager.isIgnored(packageName, title, bodyRaw)) {
+            super.onNotificationPosted(sbn)
+            return
+        }
+
         val searchBody = "$title $text $bigText".lowercase()
         val titleLower = title.lowercase()
         val bodyLower = "$text $bigText".lowercase()
@@ -134,7 +145,7 @@ class PrimeNotifyListenerService : NotificationListenerService() {
             packageName = packageName,
             appName = appName,
             title = title,
-            body = bigText.ifBlank { text },
+            body = bodyRaw,
             matchedRules = allLoggedRules,
         )
 
