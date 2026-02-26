@@ -12,6 +12,11 @@
     <string name="nav_add_edit_flash_rule">Flaş Kuralı Ekle/Düzenle</string>
     <string name="nav_add_edit_wake_up_rule">Ekran Açma Kuralı Ekle/Düzenle</string>
     <string name="nav_add_edit_aod_rule">AOD Kuralı Ekle/Düzenle</string>
+    <string name="nav_logging">Günlükler</string>
+
+    <!-- Menu -->
+    <string name="cd_more_options">Daha fazla seçenek</string>
+    <string name="menu_view_logs">Günlükleri Gör</string>
 
     <!-- Home Screen -->
     <string name="service_title">PrimeNotify Servisi</string>
@@ -163,4 +168,17 @@
     <string name="search_apps">Uygulama ara…</string>
     <string name="available">Mevcut</string>
     <string name="selected">Seçili</string>
+
+    <!-- Logging Screen -->
+    <string name="logs_title">Bildirim Günlükleri</string>
+    <string name="logs_empty">Henüz günlük yok.\nGünlükler, bir kural eşleştiğinde görünür.</string>
+    <string name="logs_clear">Temizle</string>
+    <string name="logs_clear_confirm_title">Tüm günlükler temizlensin mi?</string>
+    <string name="logs_clear_confirm_body">Bu işlem %1$d günlük girişini kalıcı olarak siler.</string>
+    <string name="logs_filter_all">Tümü</string>
+    <string name="logs_filter_flash">Flaş</string>
+    <string name="logs_filter_wake_up">Ekran Aç</string>
+    <string name="logs_filter_aod">AOD</string>
+    <string name="log_rule_executed">Çalıştırıldı</string>
+    <string name="log_rule_blocked">Engellendi</string>
 </resources>

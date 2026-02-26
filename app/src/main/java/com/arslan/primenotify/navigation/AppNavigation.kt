@@ -10,14 +10,17 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
@@ -27,9 +30,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.text.font.FontWeight
@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.arslan.primenotify.R
 import com.arslan.primenotify.ui.home.HomeScreen
+import com.arslan.primenotify.ui.logging.LoggingScreen
 import com.arslan.primenotify.ui.permissions.PermissionsScreen
 
 sealed class Screen(val route: String, val labelResId: Int) {
@@ -55,6 +56,7 @@ sealed class Screen(val route: String, val labelResId: Int) {
     data object AddEditAodRule : Screen("add_edit_aod_rule/{ruleId}", com.arslan.primenotify.R.string.nav_add_edit_aod_rule) {
         fun createRoute(ruleId: String?) = "add_edit_aod_rule/${ruleId ?: "new"}"
     }
+    data object Logging : Screen("logging", com.arslan.primenotify.R.string.nav_logging)
 }
 
 @Composable
@@ -199,6 +201,21 @@ fun AppNavigation() {
                 }
             )
         }
+        composable(
+            route = Screen.Logging.route,
+            enterTransition = { slideInHorizontally(initialOffsetX = { it }) + fadeIn(animationSpec = tween(300)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut(animationSpec = tween(300)) },
+            popEnterTransition = { slideInHorizontally(initialOffsetX = { it }) + fadeIn(animationSpec = tween(300)) },
+            popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut(animationSpec = tween(300)) }
+        ) {
+            LoggingScreen(
+                onNavigateBack = {
+                    if (rootNavController.previousBackStackEntry != null) {
+                        rootNavController.popBackStack()
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -217,6 +234,14 @@ fun MainFlowScreen(rootNavController: NavController) {
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold
                     )
+                },
+                actions = {
+                    IconButton(onClick = { rootNavController.navigate(Screen.Logging.route) }) {
+                        Icon(
+                            imageVector = Icons.Default.History,
+                            contentDescription = stringResource(R.string.nav_logging)
+                        )
+                    }
                 }
             )
         },

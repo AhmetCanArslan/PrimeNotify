@@ -12,6 +12,11 @@
     <string name="nav_add_edit_flash_rule">Add/Edit Flash Rule</string>
     <string name="nav_add_edit_wake_up_rule">Add/Edit Wake Up Rule</string>
     <string name="nav_add_edit_aod_rule">Add/Edit AOD Rule</string>
+    <string name="nav_logging">Logs</string>
+
+    <!-- Menu -->
+    <string name="cd_more_options">More options</string>
+    <string name="menu_view_logs">View Logs</string>
 
     <!-- Home Screen -->
     <string name="service_title">PrimeNotify Service</string>
@@ -163,4 +168,17 @@
     <string name="search_apps">Search apps…</string>
     <string name="available">Available</string>
     <string name="selected">Selected</string>
+
+    <!-- Logging Screen -->
+    <string name="logs_title">Notification Logs</string>
+    <string name="logs_empty">No logs yet.\nLogs appear when a notification matches a rule.</string>
+    <string name="logs_clear">Clear</string>
+    <string name="logs_clear_confirm_title">Clear all logs?</string>
+    <string name="logs_clear_confirm_body">This will permanently delete all %1$d log entries.</string>
+    <string name="logs_filter_all">All</string>
+    <string name="logs_filter_flash">Flash</string>
+    <string name="logs_filter_wake_up">Wake Up</string>
+    <string name="logs_filter_aod">AOD</string>
+    <string name="log_rule_executed">Executed</string>
+    <string name="log_rule_blocked">Blocked</string>
 </resources>
