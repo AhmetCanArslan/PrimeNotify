@@ -202,6 +202,8 @@ Ignore a notification from the logs to suppress it in the future.</string>
     <string name="ignored_restore_confirm">Stop Ignoring</string>
     <string name="logs_clear_confirm_title">Clear all logs?</string>
     <string name="logs_clear_confirm_body">This will permanently delete all %1$d log entries.</string>
+    <string name="logs_delete_confirm_title">Delete notification?</string>
+    <string name="logs_delete_confirm_body">This log entry will be permanently removed.</string>
     <string name="logs_filter_all">All</string>
     <string name="logs_filter_flash">Flash</string>
     <string name="logs_filter_wake_up">Wake Up</string>

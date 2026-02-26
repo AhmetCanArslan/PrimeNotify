@@ -15,6 +15,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -34,6 +37,16 @@ class LoggingViewModel(application: Application) : AndroidViewModel(application)
 
     init {
         refreshLogs()
+        // Observe installed-apps list; rebuild icon cache whenever it changes
+        // (e.g. when AppListManager finishes its async load).
+        viewModelScope.launch {
+            AppListManager.installedApps
+                .map { it.isNotEmpty() }
+                .distinctUntilChanged()
+                .collectLatest { loaded ->
+                    if (loaded) rebuildIconCache()
+                }
+        }
     }
 
     fun ignoreEntry(entry: LogEntry, type: IgnoreType) {
@@ -69,28 +82,49 @@ class LoggingViewModel(application: Application) : AndroidViewModel(application)
     fun clearLogs() {
         viewModelScope.launch(Dispatchers.IO) {
             loggingManager.clearLogs()
-            val result = loggingManager.getLogs(null)
-            val icons = buildIconCache(result)
             withContext(Dispatchers.Main) {
-                _logs.value = result
-                _iconCache.value = icons
+                _logs.value = emptyList()
+                _iconCache.value = emptyMap()
             }
         }
     }
 
+    fun deleteLog(id: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            loggingManager.deleteLog(id)
+            val result = loggingManager.getLogs(_filter.value)
+            withContext(Dispatchers.Main) {
+                _logs.value = result
+            }
+        }
+    }
+
+    /** Load logs immediately, then build icon cache separately so the list appears fast. */
     private fun refreshLogs() {
         viewModelScope.launch(Dispatchers.IO) {
             val result = loggingManager.getLogs(_filter.value)
-            val icons = buildIconCache(result)
             withContext(Dispatchers.Main) {
                 _logs.value = result
+            }
+            // build icon cache without blocking list display
+            val icons = buildIconCache(result)
+            withContext(Dispatchers.Main) {
                 _iconCache.value = icons
             }
         }
     }
 
-    private fun buildIconCache(logs: List<LogEntry>): Map<String, ImageBitmap?> =
-        logs.map { it.packageName }
-            .distinct()
-            .associateWith { AppListManager.getIconForPackage(it) }
+    /** Rebuild icons from the current log list (called when AppListManager finishes loading). */
+    private suspend fun rebuildIconCache() {
+        val currentLogs = _logs.value
+        if (currentLogs.isEmpty()) return
+        val icons = withContext(Dispatchers.IO) { buildIconCache(currentLogs) }
+        _iconCache.value = icons
+    }
+
+    private fun buildIconCache(logs: List<LogEntry>): Map<String, ImageBitmap?> {
+        val packages = HashSet<String>(logs.size)
+        for (entry in logs) packages.add(entry.packageName)
+        return packages.associateWith { AppListManager.getIconForPackage(it) }
+    }
 }

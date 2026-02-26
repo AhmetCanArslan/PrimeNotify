@@ -11,8 +11,9 @@ class LoggingManager(context: Context) {
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     private val gson = Gson()
 
-    // Loaded once at construction; kept in sync with every write so reads never re-parse.
-    private val entries: MutableList<LogEntry> = loadFromPrefs()
+    // Lazy-loaded so Gson deserialization happens on the first IO-thread call
+    // instead of blocking the main thread during ViewModel construction.
+    private val entries: MutableList<LogEntry> by lazy { loadFromPrefs() }
 
     // -------------------------------------------------------------------------
     // Public API
@@ -70,6 +71,12 @@ class LoggingManager(context: Context) {
     }
 
     /** Clears all persisted and in-memory log entries. */
+    @Synchronized
+    fun deleteLog(id: String) {
+        entries.removeAll { it.id == id }
+        persist()
+    }
+
     @Synchronized
     fun clearLogs() {
         entries.clear()

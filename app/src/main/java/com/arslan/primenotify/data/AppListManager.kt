@@ -51,6 +51,10 @@ object AppListManager {
     private val _installedApps = MutableStateFlow<List<AppItem>>(emptyList())
     val installedApps: StateFlow<List<AppItem>> = _installedApps.asStateFlow()
 
+    /** Fast O(1) icon lookup by package name. Rebuilt whenever _installedApps changes. */
+    @Volatile
+    private var iconIndex: HashMap<String, ImageBitmap?> = hashMapOf()
+
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     fun initialize(context: Context) {
@@ -72,12 +76,16 @@ object AppListManager {
                     )
                 }
                 .sortedBy { it.name.lowercase() }
+            // Build fast lookup index before publishing
+            val index = HashMap<String, ImageBitmap?>(apps.size)
+            for (app in apps) index[app.packageName] = app.icon
+            iconIndex = index
             _installedApps.value = apps
         }
     }
 
     fun getIconForPackage(packageName: String): ImageBitmap? =
-        _installedApps.value.find { it.packageName == packageName }?.icon
+        iconIndex[packageName]
 
     private const val ICON_SIZE_PX = 48
 

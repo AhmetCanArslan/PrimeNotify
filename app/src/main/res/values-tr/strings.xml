@@ -202,6 +202,8 @@ Gelecekte bastırmak için günlüklerden bir bildirimi yoksayın.</string>
     <string name="ignored_restore_confirm">Yoksaymayı Durdur</string>
     <string name="logs_clear_confirm_title">Tüm günlükler temizlensin mi?</string>
     <string name="logs_clear_confirm_body">Bu işlem %1$d günlük girişini kalıcı olarak siler.</string>
+    <string name="logs_delete_confirm_title">Bildirim silinsin mi?</string>
+    <string name="logs_delete_confirm_body">Bu günlük girişi kalıcı olarak kaldırılacak.</string>
     <string name="logs_filter_all">Tümü</string>
     <string name="logs_filter_flash">Flaş</string>
     <string name="logs_filter_wake_up">Ekran Aç</string>

@@ -87,6 +87,7 @@ fun LoggingScreen(
     val iconCache by viewModel.iconCache.collectAsState()
     var showClearDialog by remember { mutableStateOf(false) }
     var ignoreTarget by remember { mutableStateOf<LogEntry?>(null) }
+    var deleteTarget by remember { mutableStateOf<LogEntry?>(null) }
     var showOverflowMenu by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -193,11 +194,17 @@ fun LoggingScreen(
                         vertical = 8.dp
                     )
                 ) {
-                    items(logs, key = { it.id }) { entry ->
+                    items(
+                        items = logs,
+                        key = { it.id },
+                        contentType = { "log_entry" }
+                    ) { entry ->
                         LogItem(
                             entry = entry,
                             icon = iconCache[entry.packageName],
-                            onIgnoreClick = { ignoreTarget = entry }
+                            onIgnoreClick = { ignoreTarget = entry },
+                            onDeleteClick = { deleteTarget = entry },
+                            modifier = Modifier.animateItem()
                         )
                     }
                 }
@@ -228,6 +235,42 @@ fun LoggingScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showClearDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    // Delete single-entry dialog
+    deleteTarget?.let { entry ->
+        AlertDialog(
+            onDismissRequest = { deleteTarget = null },
+            title = {
+                Text(
+                    text = stringResource(R.string.logs_delete_confirm_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(stringResource(R.string.logs_delete_confirm_body))
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.deleteLog(entry.id)
+                        deleteTarget = null
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
+                ) {
+                    Text(stringResource(R.string.delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { deleteTarget = null }) {
                     Text(stringResource(R.string.cancel))
                 }
             }
@@ -319,11 +362,17 @@ fun LoggingScreen(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun LogItem(entry: LogEntry, icon: ImageBitmap?, onIgnoreClick: () -> Unit) {
+private fun LogItem(
+    entry: LogEntry,
+    icon: ImageBitmap?,
+    onIgnoreClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val context = LocalContext.current
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         ),
@@ -375,6 +424,18 @@ private fun LogItem(entry: LogEntry, icon: ImageBitmap?, onIgnoreClick: () -> Un
                         text = formatTimestamp(context, entry.timestamp),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                IconButton(
+                    onClick = onDeleteClick,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = stringResource(R.string.cd_delete),
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.error
                     )
                 }
 
@@ -489,22 +550,35 @@ private fun EmptyLogsState(modifier: Modifier = Modifier) {
 }
 
 private fun formatTimestamp(context: Context, timestamp: Long): String {
-    val now = Calendar.getInstance()
-    val then = Calendar.getInstance().apply { timeInMillis = timestamp }
-
-    val diffMs = now.timeInMillis - timestamp
+    val now = System.currentTimeMillis()
+    val diffMs = now - timestamp
     val diffMin = diffMs / 60_000
     val diffHours = diffMs / 3_600_000
-
-    val timeFmt = android.text.format.DateFormat.getTimeFormat(context)
 
     return when {
         diffMin < 1 -> "Just now"
         diffMin < 60 -> "$diffMin min ago"
-        diffHours < 24 && now.get(Calendar.DAY_OF_YEAR) == then.get(Calendar.DAY_OF_YEAR) ->
-            timeFmt.format(Date(timestamp))
-        diffHours < 48 -> "Yesterday " + timeFmt.format(Date(timestamp))
-        else -> SimpleDateFormat("MMM d", Locale.getDefault()).format(Date(timestamp)) +
-            " " + timeFmt.format(Date(timestamp))
+        else -> {
+            val timeFmt = cachedTimeFormat(context)
+            val then = Calendar.getInstance().apply { timeInMillis = timestamp }
+            val nowCal = Calendar.getInstance()
+            when {
+                diffHours < 24 && nowCal.get(Calendar.DAY_OF_YEAR) == then.get(Calendar.DAY_OF_YEAR) ->
+                    timeFmt.format(Date(timestamp))
+                diffHours < 48 -> "Yesterday " + timeFmt.format(Date(timestamp))
+                else -> cachedDateFormat().format(Date(timestamp)) +
+                    " " + timeFmt.format(Date(timestamp))
+            }
+        }
     }
 }
+
+/** Cached formatters — avoid re-creating for every list item during composition. */
+private var _cachedTimeFormat: java.text.DateFormat? = null
+private var _cachedDateFormat: SimpleDateFormat? = null
+
+private fun cachedTimeFormat(context: Context): java.text.DateFormat =
+    _cachedTimeFormat ?: android.text.format.DateFormat.getTimeFormat(context).also { _cachedTimeFormat = it }
+
+private fun cachedDateFormat(): SimpleDateFormat =
+    _cachedDateFormat ?: SimpleDateFormat("MMM d", Locale.getDefault()).also { _cachedDateFormat = it }
