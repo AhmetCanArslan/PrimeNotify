@@ -185,6 +185,21 @@
     <string name="logs_ignore_by_header">Header: "%1$s"</string>
     <string name="logs_ignore_by_description">Description: "%1$s"</string>
     <string name="cd_ignore_notification">Ignore notification</string>
+
+    <!-- Ignored Notifications Screen -->
+    <string name="nav_ignored_notifications">Ignored Notifications</string>
+    <string name="ignored_notifications_title">Ignored Notifications</string>
+    <string name="ignored_notifications_empty">No ignored notifications yet.
+Ignore a notification from the logs to suppress it in the future.</string>
+    <string name="ignored_type_app">App</string>
+    <string name="ignored_type_title">Title</string>
+    <string name="ignored_type_body">Body</string>
+    <string name="ignored_restore_cd">Restore notification</string>
+    <string name="ignored_restore_confirm_title">Stop ignoring?</string>
+    <string name="ignored_restore_desc_app">Notifications from %1$s will no longer be ignored.</string>
+    <string name="ignored_restore_desc_title">Notifications with title "%1$s" will no longer be ignored.</string>
+    <string name="ignored_restore_desc_body">Notifications with body "%1$s" will no longer be ignored.</string>
+    <string name="ignored_restore_confirm">Stop Ignoring</string>
     <string name="logs_clear_confirm_title">Clear all logs?</string>
     <string name="logs_clear_confirm_body">This will permanently delete all %1$d log entries.</string>
     <string name="logs_filter_all">All</string>

@@ -21,10 +21,14 @@ data class IgnoreRule(
     @SerializedName("packageName")
     val packageName: String,
 
+    /** Human-readable app name (for display in the ignored list). */
+    @SerializedName("appName")
+    val appName: String? = null,
+
     /**
      * For [IgnoreType.APP] this is unused (match is by packageName alone).
      * For [IgnoreType.TITLE] / [IgnoreType.BODY] this is the substring to match.
      */
     @SerializedName("matchValue")
-    val matchValue: String = ""
+    val matchValue: String? = null
 ) : Parcelable

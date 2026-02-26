@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.arslan.primenotify.R
 import com.arslan.primenotify.ui.home.HomeScreen
+import com.arslan.primenotify.ui.ignored.IgnoredNotificationsScreen
 import com.arslan.primenotify.ui.logging.LoggingScreen
 import com.arslan.primenotify.ui.permissions.PermissionsScreen
 
@@ -49,6 +50,7 @@ sealed class Screen(val route: String, val labelResId: Int) {
     }
     data object CreatePattern : Screen("create_pattern", com.arslan.primenotify.R.string.nav_create_pattern)
     data object Logging : Screen("logging", com.arslan.primenotify.R.string.nav_logging)
+    data object IgnoredNotifications : Screen("ignored_notifications", com.arslan.primenotify.R.string.nav_ignored_notifications)
 }
 
 @Composable
@@ -126,11 +128,29 @@ fun AppNavigation() {
         composable(
             route = Screen.Logging.route,
             enterTransition = { slideInHorizontally(initialOffsetX = { it }) + fadeIn(animationSpec = tween(300)) },
-            exitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut(animationSpec = tween(300)) },
-            popEnterTransition = { slideInHorizontally(initialOffsetX = { it }) + fadeIn(animationSpec = tween(300)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { -it }) + fadeOut(animationSpec = tween(300)) },
+            popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }) + fadeIn(animationSpec = tween(300)) },
             popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut(animationSpec = tween(300)) }
         ) {
             LoggingScreen(
+                onNavigateBack = {
+                    if (rootNavController.previousBackStackEntry != null) {
+                        rootNavController.popBackStack()
+                    }
+                },
+                onNavigateToIgnored = {
+                    rootNavController.navigate(Screen.IgnoredNotifications.route)
+                }
+            )
+        }
+        composable(
+            route = Screen.IgnoredNotifications.route,
+            enterTransition = { slideInHorizontally(initialOffsetX = { it }) + fadeIn(animationSpec = tween(300)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { -it }) + fadeOut(animationSpec = tween(300)) },
+            popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }) + fadeIn(animationSpec = tween(300)) },
+            popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut(animationSpec = tween(300)) }
+        ) {
+            IgnoredNotificationsScreen(
                 onNavigateBack = {
                     if (rootNavController.previousBackStackEntry != null) {
                         rootNavController.popBackStack()

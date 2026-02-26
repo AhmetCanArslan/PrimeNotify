@@ -40,16 +40,19 @@ class LoggingViewModel(application: Application) : AndroidViewModel(application)
         val rule = when (type) {
             IgnoreType.APP -> IgnoreRule(
                 type = IgnoreType.APP,
-                packageName = entry.packageName
+                packageName = entry.packageName,
+                appName = entry.appName
             )
             IgnoreType.TITLE -> IgnoreRule(
                 type = IgnoreType.TITLE,
                 packageName = entry.packageName,
+                appName = entry.appName,
                 matchValue = entry.title
             )
             IgnoreType.BODY -> IgnoreRule(
                 type = IgnoreType.BODY,
                 packageName = entry.packageName,
+                appName = entry.appName,
                 matchValue = entry.body
             )
         }

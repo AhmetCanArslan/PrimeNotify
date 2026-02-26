@@ -30,6 +30,12 @@ class IgnoreManager(context: Context) {
         }
     }
 
+    fun removeRule(id: String) {
+        val current = getRules().toMutableList()
+        current.removeAll { it.id == id }
+        save(current)
+    }
+
     private fun save(rules: List<IgnoreRule>) {
         prefs.edit().putString(KEY, gson.toJson(rules)).apply()
     }
@@ -45,11 +51,11 @@ class IgnoreManager(context: Context) {
                     rule.packageName == packageName
                 IgnoreType.TITLE ->
                     rule.packageName == packageName &&
-                        rule.matchValue.isNotBlank() &&
+                        !rule.matchValue.isNullOrBlank() &&
                         title.contains(rule.matchValue, ignoreCase = true)
                 IgnoreType.BODY ->
                     rule.packageName == packageName &&
-                        rule.matchValue.isNotBlank() &&
+                        !rule.matchValue.isNullOrBlank() &&
                         body.contains(rule.matchValue, ignoreCase = true)
             }
         }

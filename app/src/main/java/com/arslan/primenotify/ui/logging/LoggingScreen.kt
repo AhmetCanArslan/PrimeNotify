@@ -25,12 +25,15 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -76,6 +79,7 @@ import java.util.Locale
 @Composable
 fun LoggingScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToIgnored: () -> Unit = {},
     viewModel: LoggingViewModel = viewModel()
 ) {
     val logs by viewModel.logs.collectAsState()
@@ -83,6 +87,7 @@ fun LoggingScreen(
     val iconCache by viewModel.iconCache.collectAsState()
     var showClearDialog by remember { mutableStateOf(false) }
     var ignoreTarget by remember { mutableStateOf<LogEntry?>(null) }
+    var showOverflowMenu by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -102,6 +107,32 @@ fun LoggingScreen(
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = stringResource(R.string.logs_clear)
+                            )
+                        }
+                    }
+                    Box {
+                        IconButton(onClick = { showOverflowMenu = true }) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = stringResource(R.string.cd_more_options)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showOverflowMenu,
+                            onDismissRequest = { showOverflowMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.nav_ignored_notifications)) },
+                                onClick = {
+                                    showOverflowMenu = false
+                                    onNavigateToIgnored()
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.NotificationsOff,
+                                        contentDescription = null
+                                    )
+                                }
                             )
                         }
                     }
