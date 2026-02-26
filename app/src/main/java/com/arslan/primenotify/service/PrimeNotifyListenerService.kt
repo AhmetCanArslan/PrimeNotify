@@ -1,12 +1,15 @@
 package com.arslan.primenotify.service
 
 import android.app.Notification
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import androidx.core.app.NotificationCompat
+import com.arslan.primenotify.R
 import com.arslan.primenotify.data.FlashPattern
 import com.arslan.primenotify.data.LoggingManager
 import com.arslan.primenotify.data.MatchedRuleInfo
@@ -28,12 +31,14 @@ class PrimeNotifyListenerService : NotificationListenerService() {
         screenWakeManager = ScreenWakeManager(this)
         aodManager = AodManager(this)
         loggingManager = LoggingManager(this)
+        startPersistentNotification()
     }
 
     override fun onDestroy() {
         flashManager.stop()
         screenWakeManager.stop()
         aodManager.stop()
+        stopForeground(STOP_FOREGROUND_REMOVE)
         super.onDestroy()
     }
 
@@ -149,5 +154,34 @@ class PrimeNotifyListenerService : NotificationListenerService() {
     private fun buildRuleLabel(appNames: List<String>, keywords: List<String>): String {
         val appsLabel = appNames.joinToString(", ").ifBlank { "?" }
         return if (keywords.isEmpty()) appsLabel else "$appsLabel – ${keywords.joinToString(", ")}"
+    }
+
+    private fun startPersistentNotification() {
+        val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val channel = NotificationChannel(
+            PERSISTENT_CHANNEL_ID,
+            getString(R.string.service_title),
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            description = getString(R.string.notification_persistent_text)
+            setShowBadge(false)
+        }
+        nm.createNotificationChannel(channel)
+
+        val notification = NotificationCompat.Builder(this, PERSISTENT_CHANNEL_ID)
+            .setContentTitle(getString(R.string.service_title))
+            .setContentText(getString(R.string.notification_persistent_text))
+            .setSmallIcon(R.drawable.ic_notification)
+            .setOngoing(true)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setSilent(true)
+            .build()
+
+        startForeground(PERSISTENT_NOTIFICATION_ID, notification)
+    }
+
+    companion object {
+        private const val PERSISTENT_CHANNEL_ID = "prime_notify_persistent"
+        private const val PERSISTENT_NOTIFICATION_ID = 1001
     }
 }

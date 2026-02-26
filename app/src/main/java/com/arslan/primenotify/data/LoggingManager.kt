@@ -32,6 +32,14 @@ class LoggingManager(context: Context) {
         body: String,
         matchedRules: List<MatchedRuleInfo>
     ) {
+        // Deduplication: skip if identical notification was logged within the window
+        val now = System.currentTimeMillis()
+        val isDuplicate = entries.any { e ->
+            e.packageName == packageName && e.title == title && e.body == body &&
+                (now - e.timestamp) < DEDUP_WINDOW_MS
+        }
+        if (isDuplicate) return
+
         val entry = LogEntry(
             packageName = packageName,
             appName = appName,
@@ -91,5 +99,6 @@ class LoggingManager(context: Context) {
         private const val PREFS_NAME = "prime_notify_logs"
         private const val LOG_ENTRIES_KEY = "log_entries_list"
         private const val MAX_ENTRIES = 500
+        private const val DEDUP_WINDOW_MS = 3_000L
     }
 }

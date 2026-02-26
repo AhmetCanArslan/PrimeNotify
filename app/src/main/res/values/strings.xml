@@ -185,6 +185,7 @@
     <string name="log_rule_blocked">Blocked</string>
 
     <!-- Unified Rules -->
+    <string name="notification_persistent_text">Monitoring notifications in the background</string>
     <string name="rules_home_desc">Manage your notification rules</string>
     <string name="rules_count">%1$d rules</string>
     <string name="actions_title">Actions</string>

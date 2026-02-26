@@ -64,6 +64,7 @@ import com.arslan.primenotify.R
 import com.arslan.primenotify.data.LogEntry
 import com.arslan.primenotify.data.MatchedRuleInfo
 import com.arslan.primenotify.data.RuleType
+import android.content.Context
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -256,7 +257,7 @@ private fun LogItem(entry: LogEntry) {
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = formatTimestamp(entry.timestamp),
+                        text = formatTimestamp(context, entry.timestamp),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -360,7 +361,7 @@ private fun EmptyLogsState(modifier: Modifier = Modifier) {
     }
 }
 
-private fun formatTimestamp(timestamp: Long): String {
+private fun formatTimestamp(context: Context, timestamp: Long): String {
     val now = Calendar.getInstance()
     val then = Calendar.getInstance().apply { timeInMillis = timestamp }
 
@@ -368,12 +369,15 @@ private fun formatTimestamp(timestamp: Long): String {
     val diffMin = diffMs / 60_000
     val diffHours = diffMs / 3_600_000
 
+    val timeFmt = android.text.format.DateFormat.getTimeFormat(context)
+
     return when {
         diffMin < 1 -> "Just now"
         diffMin < 60 -> "$diffMin min ago"
         diffHours < 24 && now.get(Calendar.DAY_OF_YEAR) == then.get(Calendar.DAY_OF_YEAR) ->
-            SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(timestamp))
-        diffHours < 48 -> "Yesterday " + SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(timestamp))
-        else -> SimpleDateFormat("MMM d, h:mm a", Locale.getDefault()).format(Date(timestamp))
+            timeFmt.format(Date(timestamp))
+        diffHours < 48 -> "Yesterday " + timeFmt.format(Date(timestamp))
+        else -> SimpleDateFormat("MMM d", Locale.getDefault()).format(Date(timestamp)) +
+            " " + timeFmt.format(Date(timestamp))
     }
 }
