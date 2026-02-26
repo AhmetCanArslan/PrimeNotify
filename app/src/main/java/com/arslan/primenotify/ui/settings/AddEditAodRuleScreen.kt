@@ -64,6 +64,7 @@ fun AddEditAodRuleScreen(
     var applyOnVibration by remember(initialRule) { mutableStateOf(initialRule?.applyOnVibration ?: true) }
     var applyOnSilent by remember(initialRule) { mutableStateOf(initialRule?.applyOnSilent ?: true) }
     var applyOnDND by remember(initialRule) { mutableStateOf(initialRule?.applyOnDND ?: true) }
+    var preventMultipleNotifications by remember(initialRule) { mutableStateOf(initialRule?.preventMultipleNotifications ?: false) }
 
 
     val durationOptions = listOf(-1, -2, 5, 10, 15, 30, 60, 120, 300)
@@ -100,7 +101,8 @@ fun AddEditAodRuleScreen(
                                     durationSeconds = durationSeconds,
                                     applyOnVibration = applyOnVibration,
                                     applyOnSilent = applyOnSilent,
-                                    applyOnDND = applyOnDND
+                                    applyOnDND = applyOnDND,
+                                    preventMultipleNotifications = preventMultipleNotifications
                                 ) ?: AodRule(
                                     packageNames = selectedApps.map { it.packageName },
                                     appNames = selectedApps.map { it.name },
@@ -108,7 +110,8 @@ fun AddEditAodRuleScreen(
                                     durationSeconds = durationSeconds,
                                     applyOnVibration = applyOnVibration,
                                     applyOnSilent = applyOnSilent,
-                                    applyOnDND = applyOnDND
+                                    applyOnDND = applyOnDND,
+                                    preventMultipleNotifications = preventMultipleNotifications
                                 )
 
                                 if (initialRule != null) {
@@ -274,6 +277,14 @@ fun AddEditAodRuleScreen(
                             Checkbox(checked = applyOnDND, onCheckedChange = { applyOnDND = it })
                             Text(stringResource(R.string.dnd), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(end = 8.dp))
                         }
+                    }
+                    
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable { preventMultipleNotifications = !preventMultipleNotifications }
+                    ) {
+                        Checkbox(checked = preventMultipleNotifications, onCheckedChange = { preventMultipleNotifications = it })
+                        Text(stringResource(R.string.prevent_multiple_notifications), style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }

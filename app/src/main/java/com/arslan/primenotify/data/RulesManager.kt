@@ -12,8 +12,11 @@ class RulesManager(private val context: Context) {
     private val gson = Gson()
     
     private val FLASH_RULES_KEY = "flash_rules_list"
+    private val WAKE_UP_RULES_KEY = "wake_up_rules_list"
+    private val AOD_RULES_KEY = "aod_rules_list"
     private val CUSTOM_PATTERNS_KEY = "custom_patterns_list"
     private val HAS_PROXIMITY_SENSOR_KEY = "has_proximity_sensor"
+    private val RULE_THROTTLE_KEY = "rule_throttle_"
 
     fun hasProximitySensor(): Boolean {
         if (!prefs.contains(HAS_PROXIMITY_SENSOR_KEY)) {
@@ -62,10 +65,11 @@ class RulesManager(private val context: Context) {
                 val applyOnVibration = obj.optBoolean("applyOnVibration", true)
                 val applyOnSilent = obj.optBoolean("applyOnSilent", true)
                 val applyOnDND = obj.optBoolean("applyOnDND", true)
+                val preventMultipleNotifications = obj.optBoolean("preventMultipleNotifications", false)
                 val customPatternStr = obj.optString("customPatternId", "")
                 val customPatternId = if (customPatternStr.isNotEmpty()) customPatternStr else null
                 
-                cleanRules.add(FlashRule(id, packageNames, appNames, keyword, keywords, pattern, customPatternId, applyOnVibration, applyOnSilent, applyOnDND, isEnabled))
+                cleanRules.add(FlashRule(id, packageNames, appNames, keyword, keywords, pattern, customPatternId, applyOnVibration, applyOnSilent, applyOnDND, preventMultipleNotifications, isEnabled))
             }
             cleanRules
         } catch (e: Exception) {
@@ -133,8 +137,6 @@ class RulesManager(private val context: Context) {
     
     // Wake Up Rules
     
-    private val WAKE_UP_RULES_KEY = "wake_up_rules_list"
-    
     fun getWakeUpRules(): List<WakeUpRule> {
         val json = prefs.getString(WAKE_UP_RULES_KEY, null) ?: return emptyList()
         return try {
@@ -180,8 +182,6 @@ class RulesManager(private val context: Context) {
     }
     // AOD Rules
     
-    private val AOD_RULES_KEY = "aod_rules_list"
-    
     fun getAodRules(): List<AodRule> {
         val json = prefs.getString(AOD_RULES_KEY, null) ?: return emptyList()
         return try {
@@ -224,5 +224,15 @@ class RulesManager(private val context: Context) {
             current[index] = updatedRule
             saveAodRules(current)
         }
+    }
+    
+    fun shouldThrottleRule(ruleId: String): Boolean {
+        val lastExecution = prefs.getLong("$RULE_THROTTLE_KEY$ruleId", 0L)
+        val currentTime = System.currentTimeMillis()
+        return (currentTime - lastExecution) < 10000L // 10 seconds
+    }
+    
+    fun updateRuleExecutionTime(ruleId: String) {
+        prefs.edit().putLong("$RULE_THROTTLE_KEY$ruleId", System.currentTimeMillis()).apply()
     }
 }

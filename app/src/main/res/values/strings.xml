@@ -52,6 +52,8 @@
     <string name="permission_secure_settings_desc">ADB permission required to change AOD setting</string>
 
     <!-- Permission Screen -->
+    <string name="permission_required_title">Permissions Required</string>
+    <string name="permission_required_desc">Please grant all required permissions from the Permissions tab before starting the service.</string>
     <string name="permission_granted">Granted</string>
     <string name="permission_grant">Grant</string>
     <string name="grant_secure_settings_title">Grant Secure Settings</string>
@@ -114,6 +116,7 @@
     <string name="vibration">Vibration</string>
     <string name="silence">Silence</string>
     <string name="dnd">DND</string>
+    <string name="prevent_multiple_notifications">Prevent multiple notifications (10s cooldown)</string>
 
     <!-- Wake Up Settings -->
     <string name="wake_up_settings">Wake Up Settings</string>

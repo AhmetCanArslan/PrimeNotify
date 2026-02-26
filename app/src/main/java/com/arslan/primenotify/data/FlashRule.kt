@@ -39,6 +39,9 @@ data class FlashRule(
     @SerializedName("applyOnDND")
     val applyOnDND: Boolean = true,
     
+    @SerializedName("preventMultipleNotifications")
+    val preventMultipleNotifications: Boolean = false,
+    
     @SerializedName("isEnabled")
     var isEnabled: Boolean = true
 ) : Parcelable

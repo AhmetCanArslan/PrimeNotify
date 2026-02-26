@@ -67,6 +67,7 @@ fun AddEditWakeUpRuleScreen(
     var applyOnVibration by remember(initialRule) { mutableStateOf(initialRule?.applyOnVibration ?: true) }
     var applyOnSilent by remember(initialRule) { mutableStateOf(initialRule?.applyOnSilent ?: true) }
     var applyOnDND by remember(initialRule) { mutableStateOf(initialRule?.applyOnDND ?: true) }
+    var preventMultipleNotifications by remember(initialRule) { mutableStateOf(initialRule?.preventMultipleNotifications ?: false) }
 
 
 
@@ -97,7 +98,8 @@ fun AddEditWakeUpRuleScreen(
                                     pocketModeEnabled = if (hasProximitySensor) pocketModeEnabled else false,
                                     applyOnVibration = applyOnVibration,
                                     applyOnSilent = applyOnSilent,
-                                    applyOnDND = applyOnDND
+                                    applyOnDND = applyOnDND,
+                                    preventMultipleNotifications = preventMultipleNotifications
                                 ) ?: WakeUpRule(
                                     packageNames = selectedApps.map { it.packageName },
                                     appNames = selectedApps.map { it.name },
@@ -106,7 +108,8 @@ fun AddEditWakeUpRuleScreen(
                                     pocketModeEnabled = if (hasProximitySensor) pocketModeEnabled else false,
                                     applyOnVibration = applyOnVibration,
                                     applyOnSilent = applyOnSilent,
-                                    applyOnDND = applyOnDND
+                                    applyOnDND = applyOnDND,
+                                    preventMultipleNotifications = preventMultipleNotifications
                                 )
 
                                 if (initialRule != null) {
@@ -298,6 +301,14 @@ fun AddEditWakeUpRuleScreen(
                             Checkbox(checked = applyOnDND, onCheckedChange = { applyOnDND = it })
                             Text(stringResource(R.string.dnd), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(end = 8.dp))
                         }
+                    }
+                    
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable { preventMultipleNotifications = !preventMultipleNotifications }
+                    ) {
+                        Checkbox(checked = preventMultipleNotifications, onCheckedChange = { preventMultipleNotifications = it })
+                        Text(stringResource(R.string.prevent_multiple_notifications), style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }

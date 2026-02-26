@@ -67,11 +67,15 @@ class PrimeNotifyListenerService : NotificationListenerService() {
             val isDND = filter != NotificationManager.INTERRUPTION_FILTER_ALL
 
             var shouldExecute = true
+            if (matchedFlashRule.preventMultipleNotifications && rulesManager.shouldThrottleRule(matchedFlashRule.id)) {
+                shouldExecute = false
+            }
             if (isVibration && !matchedFlashRule.applyOnVibration) shouldExecute = false
             if (isSilent && !matchedFlashRule.applyOnSilent) shouldExecute = false
             if (isDND && !matchedFlashRule.applyOnDND) shouldExecute = false
             
             if (shouldExecute) {
+                rulesManager.updateRuleExecutionTime(matchedFlashRule.id)
                 val customPattern = matchedFlashRule.customPatternId?.let { id ->
                     rulesManager.getCustomPatterns().find { it.id == id }
                 }
@@ -105,11 +109,15 @@ class PrimeNotifyListenerService : NotificationListenerService() {
             val isDND = filter != NotificationManager.INTERRUPTION_FILTER_ALL
 
             var shouldExecute = true
+            if (matchedWakeUpRule.preventMultipleNotifications && rulesManager.shouldThrottleRule(matchedWakeUpRule.id)) {
+                shouldExecute = false
+            }
             if (isVibration && !matchedWakeUpRule.applyOnVibration) shouldExecute = false
             if (isSilent && !matchedWakeUpRule.applyOnSilent) shouldExecute = false
             if (isDND && !matchedWakeUpRule.applyOnDND) shouldExecute = false
             
             if (shouldExecute) {
+                rulesManager.updateRuleExecutionTime(matchedWakeUpRule.id)
                 screenWakeManager.wakeScreen(
                     durationSeconds = matchedWakeUpRule.screenDurationSeconds,
                     pocketModeEnabled = matchedWakeUpRule.pocketModeEnabled
@@ -139,11 +147,15 @@ class PrimeNotifyListenerService : NotificationListenerService() {
             val isDND = filter != NotificationManager.INTERRUPTION_FILTER_ALL
 
             var shouldExecute = true
+            if (matchedAodRule.preventMultipleNotifications && rulesManager.shouldThrottleRule(matchedAodRule.id)) {
+                shouldExecute = false
+            }
             if (isVibration && !matchedAodRule.applyOnVibration) shouldExecute = false
             if (isSilent && !matchedAodRule.applyOnSilent) shouldExecute = false
             if (isDND && !matchedAodRule.applyOnDND) shouldExecute = false
             
             if (shouldExecute) {
+                rulesManager.updateRuleExecutionTime(matchedAodRule.id)
                 aodManager.triggerAod(durationSeconds = matchedAodRule.durationSeconds)
             }
         }

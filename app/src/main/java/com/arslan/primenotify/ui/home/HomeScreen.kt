@@ -44,12 +44,15 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import android.content.pm.PackageManager
+import android.os.PowerManager
 import androidx.compose.material3.Switch
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.compose.material3.Button
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import com.arslan.primenotify.R
 import com.arslan.primenotify.service.isPrimeNotifyServiceEnabled
 import com.arslan.primenotify.service.setPrimeNotifyServiceEnabled
@@ -87,6 +90,7 @@ fun HomeScreen(
     var aodEnabled by rememberSaveable { mutableStateOf(false) }
     
     var isServiceActive by remember { mutableStateOf(isPrimeNotifyServiceEnabled(context)) }
+    var showPermissionDialog by remember { mutableStateOf(false) }
 
     val notificationScope = remember { kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main + kotlinx.coroutines.SupervisorJob()) }
     var remainingSeconds by remember { mutableIntStateOf(0) }
@@ -128,8 +132,12 @@ fun HomeScreen(
                     Switch(
                         checked = isServiceActive,
                         onCheckedChange = { 
-                            isServiceActive = it
-                            setPrimeNotifyServiceEnabled(context, it)
+                            if (it && !allPermissionsGranted) {
+                                showPermissionDialog = true
+                            } else {
+                                isServiceActive = it
+                                setPrimeNotifyServiceEnabled(context, it)
+                            }
                         }
                     )
                 }
@@ -202,7 +210,33 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
+
+    if (showPermissionDialog) {
+        AlertDialog(
+            onDismissRequest = { showPermissionDialog = false },
+            title = { 
+                Text(
+                    stringResource(R.string.permission_required_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                ) 
+            },
+            text = {
+                Text(stringResource(R.string.permission_required_desc))
+            },
+            confirmButton = {
+                Button(onClick = { showPermissionDialog = false }) {
+                    Text(stringResource(R.string.got_it))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPermissionDialog = false }) {
+                    Text(stringResource(R.string.close))
+                }
+            }
+        )
     }
+}
 
 @Composable
 private fun RuleRow(
@@ -271,7 +305,9 @@ enum class PermissionType {
     NotificationAccess,
     PostNotifications,
     Camera,
-    NotificationPolicy
+    NotificationPolicy,
+    IgnoreBatteryOptimizations,
+    WriteSecureSettings
 }
 
 data class PermissionItem(
@@ -301,6 +337,14 @@ fun buildPermissionItems(context: Context): List<PermissionItem> {
 
     val notificationPolicyGranted = notificationManager?.isNotificationPolicyAccessGranted == true
 
+    val powerManager = context.getSystemService(PowerManager::class.java)
+    val ignoreBatteryOptimizationsGranted = powerManager?.isIgnoringBatteryOptimizations(context.packageName) == true
+
+    val writeSecureSettingsGranted = ContextCompat.checkSelfPermission(
+        context,
+        android.Manifest.permission.WRITE_SECURE_SETTINGS
+    ) == PackageManager.PERMISSION_GRANTED
+
     return listOf(
         PermissionItem(
             type = PermissionType.NotificationAccess,
@@ -325,6 +369,18 @@ fun buildPermissionItems(context: Context): List<PermissionItem> {
             title = context.getString(R.string.permission_notification_policy),
             description = context.getString(R.string.permission_notification_policy_desc),
             granted = notificationPolicyGranted
+        ),
+        PermissionItem(
+            type = PermissionType.IgnoreBatteryOptimizations,
+            title = context.getString(R.string.permission_run_background),
+            description = context.getString(R.string.permission_run_background_desc),
+            granted = ignoreBatteryOptimizationsGranted
+        ),
+        PermissionItem(
+            type = PermissionType.WriteSecureSettings,
+            title = context.getString(R.string.permission_secure_settings),
+            description = context.getString(R.string.permission_secure_settings_desc),
+            granted = writeSecureSettingsGranted
         )
     )
 }

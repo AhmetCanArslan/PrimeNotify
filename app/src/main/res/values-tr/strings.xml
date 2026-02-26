@@ -52,6 +52,8 @@
     <string name="permission_secure_settings_desc">AOD ayarını değiştirebilmek için ADB izni gerekir</string>
 
     <!-- Permission Screen -->
+    <string name="permission_required_title">İzin Gerekli</string>
+    <string name="permission_required_desc">Servisi başlatmadan önce lütfen İzinler sekmesinden tüm gerekli izinleri verin.</string>
     <string name="permission_granted">İzin Verildi</string>
     <string name="permission_grant">İzin Ver</string>
     <string name="grant_secure_settings_title">Güvenli Ayarları Etkinleştir</string>
@@ -114,6 +116,7 @@
     <string name="vibration">Titreşim</string>
     <string name="silence">Sessiz</string>
     <string name="dnd">Rahatsız Etmeyin</string>
+    <string name="prevent_multiple_notifications">Çoklu bildirimleri önle (10 sn bekleme)</string>
 
     <!-- Wake Up Settings -->
     <string name="wake_up_settings">Ekranı Açma Ayarları</string>
