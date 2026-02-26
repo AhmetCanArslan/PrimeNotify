@@ -126,15 +126,13 @@ class PrimeNotifyListenerService : NotificationListenerService() {
             }
         }
 
-        if (allLoggedRules.isNotEmpty()) {
-            loggingManager.logNotification(
-                packageName = packageName,
-                appName = appName,
-                title = title,
-                body = bigText.ifBlank { text },
-                matchedRules = allLoggedRules,
-            )
-        }
+        loggingManager.logNotification(
+            packageName = packageName,
+            appName = appName,
+            title = title,
+            body = bigText.ifBlank { text },
+            matchedRules = allLoggedRules,
+        )
 
         super.onNotificationPosted(sbn)
     }
