@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.NotificationsOff
+import androidx.compose.material.icons.outlined.AddCircleOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -69,6 +70,7 @@ import com.arslan.primenotify.data.IgnoreType
 import com.arslan.primenotify.data.LogEntry
 import com.arslan.primenotify.data.MatchedRuleInfo
 import com.arslan.primenotify.data.RuleType
+import com.arslan.primenotify.data.RulePrefillData
 import android.content.Context
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -80,6 +82,7 @@ import java.util.Locale
 fun LoggingScreen(
     onNavigateBack: () -> Unit,
     onNavigateToIgnored: () -> Unit = {},
+    onNavigateToAddEditRule: () -> Unit = {},
     viewModel: LoggingViewModel = viewModel()
 ) {
     val logs by viewModel.logs.collectAsState()
@@ -88,6 +91,7 @@ fun LoggingScreen(
     var showClearDialog by remember { mutableStateOf(false) }
     var ignoreTarget by remember { mutableStateOf<LogEntry?>(null) }
     var deleteTarget by remember { mutableStateOf<LogEntry?>(null) }
+    var createRuleTarget by remember { mutableStateOf<LogEntry?>(null) }
     var showOverflowMenu by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -204,6 +208,7 @@ fun LoggingScreen(
                             icon = iconCache[entry.packageName],
                             onIgnoreClick = { ignoreTarget = entry },
                             onDeleteClick = { deleteTarget = entry },
+                            onCreateRuleClick = { createRuleTarget = entry },
                             modifier = Modifier.animateItem()
                         )
                     }
@@ -358,6 +363,70 @@ fun LoggingScreen(
             }
         )
     }
+
+    // Create rule from notification dialog
+    createRuleTarget?.let { entry ->
+        AlertDialog(
+            onDismissRequest = { createRuleTarget = null },
+            title = {
+                Text(
+                    text = stringResource(R.string.logs_create_rule_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        stringResource(R.string.logs_create_rule_body),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(R.string.logs_create_rule_app, entry.appName),
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    if (entry.title.isNotBlank()) {
+                        Text(
+                            text = stringResource(R.string.logs_create_rule_header, entry.title),
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    if (entry.body.isNotBlank()) {
+                        Text(
+                            text = stringResource(R.string.logs_create_rule_description, entry.body),
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    RulePrefillData.set(
+                        packageName = entry.packageName,
+                        appName = entry.appName,
+                        titleKeyword = entry.title.takeIf { it.isNotBlank() },
+                        bodyKeyword = entry.body.takeIf { it.isNotBlank() }
+                    )
+                    createRuleTarget = null
+                    onNavigateToAddEditRule()
+                }) {
+                    Text(stringResource(R.string.logs_create_rule_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { createRuleTarget = null }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -367,6 +436,7 @@ private fun LogItem(
     icon: ImageBitmap?,
     onIgnoreClick: () -> Unit,
     onDeleteClick: () -> Unit,
+    onCreateRuleClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -424,6 +494,18 @@ private fun LogItem(
                         text = formatTimestamp(context, entry.timestamp),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                IconButton(
+                    onClick = onCreateRuleClick,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.AddCircleOutline,
+                        contentDescription = stringResource(R.string.logs_create_rule_cd),
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
 

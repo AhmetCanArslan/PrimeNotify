@@ -140,6 +140,9 @@ fun AppNavigation() {
                 },
                 onNavigateToIgnored = {
                     rootNavController.navigate(Screen.IgnoredNotifications.route)
+                },
+                onNavigateToAddEditRule = {
+                    rootNavController.navigate(Screen.AddEditRule.createRoute(null))
                 }
             )
         }

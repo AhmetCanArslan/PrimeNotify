@@ -210,6 +210,13 @@ Gelecekte bastırmak için günlüklerden bir bildirimi yoksayın.</string>
     <string name="logs_filter_aod">AOD</string>
     <string name="log_rule_executed">Çalıştırıldı</string>
     <string name="log_rule_blocked">Engellendi</string>
+    <string name="logs_create_rule_title">Bildirimden kural oluşturulsun mu?</string>
+    <string name="logs_create_rule_body">Bu bildirimin ayrıntılarıyla yeni kural önceden doldurulacak:</string>
+    <string name="logs_create_rule_app">Uygulama: %1$s</string>
+    <string name="logs_create_rule_header">Başlık: "%1$s"</string>
+    <string name="logs_create_rule_description">İçerik: "%1$s"</string>
+    <string name="logs_create_rule_confirm">Kural Oluştur</string>
+    <string name="logs_create_rule_cd">Bildirimden kural oluştur</string>
 
     <!-- Unified Rules -->
     <string name="rules_home_desc">Bildirim kurallarınızı yönetin</string>

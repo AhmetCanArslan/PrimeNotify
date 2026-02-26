@@ -210,6 +210,13 @@ Ignore a notification from the logs to suppress it in the future.</string>
     <string name="logs_filter_aod">AOD</string>
     <string name="log_rule_executed">Executed</string>
     <string name="log_rule_blocked">Blocked</string>
+    <string name="logs_create_rule_title">Create rule from notification?</string>
+    <string name="logs_create_rule_body">A new rule will be pre-filled with this notification\'s details:</string>
+    <string name="logs_create_rule_app">App: %1$s</string>
+    <string name="logs_create_rule_header">Title: "%1$s"</string>
+    <string name="logs_create_rule_description">Body: "%1$s"</string>
+    <string name="logs_create_rule_confirm">Create Rule</string>
+    <string name="logs_create_rule_cd">Create rule from notification</string>
 
     <!-- Unified Rules -->
     <string name="notification_persistent_text">Monitoring notifications in the background</string>

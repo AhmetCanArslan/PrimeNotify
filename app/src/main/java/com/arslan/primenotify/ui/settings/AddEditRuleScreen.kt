@@ -49,6 +49,9 @@ fun AddEditRuleScreen(
     val rulesManager = remember { RulesManager(context) }
     val hasProximitySensor = remember { rulesManager.hasProximitySensor() }
 
+    // Consume prefill data (set from Logging screen) for new rules only
+    val prefill = remember { if (ruleId == null || ruleId == "new") RulePrefillData.consume() else null }
+
     val initialRule = remember(ruleId) {
         if (ruleId != null && ruleId != "new") {
             rulesManager.getRules().find { it.id == ruleId }
@@ -70,6 +73,8 @@ fun AddEditRuleScreen(
         mutableStateOf(
             if (initialRule != null)
                 installedApps.filter { initialRule.packageNames.contains(it.packageName) }
+            else if (prefill != null)
+                installedApps.filter { it.packageName == prefill.packageName }
             else emptyList()
         )
     }
@@ -77,11 +82,19 @@ fun AddEditRuleScreen(
     // Title & Body Keywords (new; legacy `keywords` pre-populated into title for migration)
     var titleKeywords by remember(initialRule) {
         mutableStateOf(
-            initialRule?.titleKeywords?.ifEmpty { initialRule.keywords } ?: emptyList()
+            initialRule?.titleKeywords?.ifEmpty { initialRule.keywords }
+                ?: prefill?.titleKeyword?.let { listOf(it) }
+                ?: emptyList()
         )
     }
     var currentTitleKeyword by remember { mutableStateOf("") }
-    var bodyKeywords by remember(initialRule) { mutableStateOf(initialRule?.bodyKeywords ?: emptyList()) }
+    var bodyKeywords by remember(initialRule) {
+        mutableStateOf(
+            initialRule?.bodyKeywords
+                ?: prefill?.bodyKeyword?.let { listOf(it) }
+                ?: emptyList()
+        )
+    }
     var currentBodyKeyword by remember { mutableStateOf("") }
 
     // Flash action state
