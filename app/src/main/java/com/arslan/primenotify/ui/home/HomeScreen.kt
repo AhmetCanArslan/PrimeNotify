@@ -30,7 +30,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -54,6 +53,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
 import com.arslan.primenotify.R
+import com.arslan.primenotify.data.RulesManager
 import com.arslan.primenotify.service.isPrimeNotifyServiceEnabled
 import com.arslan.primenotify.service.setPrimeNotifyServiceEnabled
 import com.arslan.primenotify.ui.theme.PrimeNotifyTheme
@@ -62,9 +62,7 @@ import com.arslan.primenotify.ui.theme.PrimeNotifyTheme
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    onNavigateToFlashSettings: () -> Unit = {},
-    onNavigateToWakeUpScreenSettings: () -> Unit = {},
-    onNavigateToAODSettings: () -> Unit = {}
+    onNavigateToRules: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -85,10 +83,6 @@ fun HomeScreen(
     val permissionItems = remember(refreshState) { buildPermissionItems(context) }
     val allPermissionsGranted = permissionItems.all { it.granted }
 
-    var flashEnabled by rememberSaveable { mutableStateOf(false) }
-    var wakeUpScreenEnabled by rememberSaveable { mutableStateOf(false) }
-    var aodEnabled by rememberSaveable { mutableStateOf(false) }
-    
     var isServiceActive by remember { mutableStateOf(isPrimeNotifyServiceEnabled(context)) }
     var showPermissionDialog by remember { mutableStateOf(false) }
 
@@ -149,30 +143,34 @@ fun HomeScreen(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
                 )
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    RuleRow(
-                        title = stringResource(R.string.flash_pattern_title),
-                        description = stringResource(R.string.flash_pattern_desc),
-                        checked = flashEnabled,
-                        onCheckedChange = { flashEnabled = it },
-                        onSettingsClick = onNavigateToFlashSettings
-                    )
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                    RuleRow(
-                        title = stringResource(R.string.wake_up_screen_title),
-                        description = stringResource(R.string.wake_up_screen_desc),
-                        checked = wakeUpScreenEnabled,
-                        onCheckedChange = { wakeUpScreenEnabled = it },
-                        onSettingsClick = onNavigateToWakeUpScreenSettings
-                    )
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                    RuleRow(
-                        title = stringResource(R.string.turn_on_aod_title),
-                        description = stringResource(R.string.turn_on_aod_desc),
-                        checked = aodEnabled,
-                        onCheckedChange = { aodEnabled = it },
-                        onSettingsClick = onNavigateToAODSettings
-                    )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.rules),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        val ruleCount = remember(refreshState) {
+                            RulesManager(context).getRules().size
+                        }
+                        Text(
+                            text = stringResource(R.string.rules_count, ruleCount),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    IconButton(onClick = onNavigateToRules) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = stringResource(R.string.cd_settings)
+                        )
+                    }
                 }
             }
 

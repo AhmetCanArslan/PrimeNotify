@@ -13,6 +13,8 @@
     <string name="nav_add_edit_wake_up_rule">Add/Edit Wake Up Rule</string>
     <string name="nav_add_edit_aod_rule">Add/Edit AOD Rule</string>
     <string name="nav_logging">Logs</string>
+    <string name="nav_rules">Rules</string>
+    <string name="nav_add_edit_rule">Add/Edit Rule</string>
 
     <!-- Menu -->
     <string name="cd_more_options">More options</string>
@@ -181,4 +183,9 @@
     <string name="logs_filter_aod">AOD</string>
     <string name="log_rule_executed">Executed</string>
     <string name="log_rule_blocked">Blocked</string>
+
+    <!-- Unified Rules -->
+    <string name="rules_home_desc">Manage your notification rules</string>
+    <string name="rules_count">%1$d rules</string>
+    <string name="actions_title">Actions</string>
 </resources>

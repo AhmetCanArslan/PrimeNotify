@@ -13,6 +13,8 @@
     <string name="nav_add_edit_wake_up_rule">Ekran Açma Kuralı Ekle/Düzenle</string>
     <string name="nav_add_edit_aod_rule">AOD Kuralı Ekle/Düzenle</string>
     <string name="nav_logging">Günlükler</string>
+    <string name="nav_rules">Kurallar</string>
+    <string name="nav_add_edit_rule">Kural Ekle/Düzenle</string>
 
     <!-- Menu -->
     <string name="cd_more_options">Daha fazla seçenek</string>
@@ -181,4 +183,9 @@
     <string name="logs_filter_aod">AOD</string>
     <string name="log_rule_executed">Çalıştırıldı</string>
     <string name="log_rule_blocked">Engellendi</string>
+
+    <!-- Unified Rules -->
+    <string name="rules_home_desc">Bildirim kurallarınızı yönetin</string>
+    <string name="rules_count">%1$d kural</string>
+    <string name="actions_title">Eylemler</string>
 </resources>

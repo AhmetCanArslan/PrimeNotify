@@ -43,19 +43,11 @@ import com.arslan.primenotify.ui.permissions.PermissionsScreen
 sealed class Screen(val route: String, val labelResId: Int) {
     data object Home : Screen("home", com.arslan.primenotify.R.string.nav_home)
     data object Permissions : Screen("permissions", com.arslan.primenotify.R.string.nav_permissions)
-    data object FlashSettings : Screen("flash_settings", com.arslan.primenotify.R.string.nav_flash_settings)
-    data object WakeUpScreenSettings : Screen("wake_up_screen_settings", com.arslan.primenotify.R.string.nav_wake_up_screen_settings)
-    data object AODSettings : Screen("aod_settings", com.arslan.primenotify.R.string.nav_aod_settings)
+    data object Rules : Screen("rules", com.arslan.primenotify.R.string.nav_rules)
+    data object AddEditRule : Screen("add_edit_rule/{ruleId}", com.arslan.primenotify.R.string.nav_add_edit_rule) {
+        fun createRoute(ruleId: String?) = "add_edit_rule/${ruleId ?: "new"}"
+    }
     data object CreatePattern : Screen("create_pattern", com.arslan.primenotify.R.string.nav_create_pattern)
-    data object AddEditFlashRule : Screen("add_edit_flash_rule/{ruleId}", com.arslan.primenotify.R.string.nav_add_edit_flash_rule) {
-        fun createRoute(ruleId: String?) = "add_edit_flash_rule/${ruleId ?: "new"}"
-    }
-    data object AddEditWakeUpRule : Screen("add_edit_wake_up_rule/{ruleId}", com.arslan.primenotify.R.string.nav_add_edit_wake_up_rule) {
-        fun createRoute(ruleId: String?) = "add_edit_wake_up_rule/${ruleId ?: "new"}"
-    }
-    data object AddEditAodRule : Screen("add_edit_aod_rule/{ruleId}", com.arslan.primenotify.R.string.nav_add_edit_aod_rule) {
-        fun createRoute(ruleId: String?) = "add_edit_aod_rule/${ruleId ?: "new"}"
-    }
     data object Logging : Screen("logging", com.arslan.primenotify.R.string.nav_logging)
 }
 
@@ -79,20 +71,37 @@ fun AppNavigation() {
         }
 
         composable(
-            route = Screen.FlashSettings.route,
-            enterTransition = { fadeIn(animationSpec = tween(300)) },
-            exitTransition = { fadeOut(animationSpec = tween(300)) },
-            popEnterTransition = { fadeIn(animationSpec = tween(300)) },
-            popExitTransition = { fadeOut(animationSpec = tween(300)) }
+            route = Screen.Rules.route,
+            enterTransition = { slideInHorizontally(initialOffsetX = { it }) + fadeIn(animationSpec = tween(300)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut(animationSpec = tween(300)) },
+            popEnterTransition = { slideInHorizontally(initialOffsetX = { it }) + fadeIn(animationSpec = tween(300)) },
+            popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut(animationSpec = tween(300)) }
         ) {
-            com.arslan.primenotify.ui.settings.FlashSettingsScreen(
+            com.arslan.primenotify.ui.settings.RulesScreen(
                 onNavigateBack = {
                     if (rootNavController.previousBackStackEntry != null) {
                         rootNavController.popBackStack()
                     }
                 },
                 onNavigateToAddEditRule = { ruleId ->
-                    rootNavController.navigate(Screen.AddEditFlashRule.createRoute(ruleId))
+                    rootNavController.navigate(Screen.AddEditRule.createRoute(ruleId))
+                }
+            )
+        }
+        composable(
+            route = Screen.AddEditRule.route,
+            enterTransition = { slideInHorizontally(initialOffsetX = { it }) + fadeIn(animationSpec = tween(300)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut(animationSpec = tween(300)) },
+            popEnterTransition = { slideInHorizontally(initialOffsetX = { it }) + fadeIn(animationSpec = tween(300)) },
+            popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut(animationSpec = tween(300)) }
+        ) { backStackEntry ->
+            val ruleId = backStackEntry.arguments?.getString("ruleId")
+            com.arslan.primenotify.ui.settings.AddEditRuleScreen(
+                ruleId = ruleId,
+                onNavigateBack = {
+                    if (rootNavController.previousBackStackEntry != null) {
+                        rootNavController.popBackStack()
+                    }
                 },
                 onNavigateToCreatePattern = {
                     rootNavController.navigate(Screen.CreatePattern.route)
@@ -100,98 +109,11 @@ fun AppNavigation() {
             )
         }
         composable(
-            route = Screen.AddEditFlashRule.route,
-            enterTransition = { fadeIn(animationSpec = tween(300)) },
-            exitTransition = { fadeOut(animationSpec = tween(300)) },
-            popEnterTransition = { fadeIn(animationSpec = tween(300)) },
-            popExitTransition = { fadeOut(animationSpec = tween(300)) }
-        ) { backStackEntry ->
-            val ruleId = backStackEntry.arguments?.getString("ruleId")
-            com.arslan.primenotify.ui.settings.AddEditFlashRuleScreen(
-                ruleId = ruleId,
-                onNavigateBack = {
-                    if (rootNavController.previousBackStackEntry != null) {
-                        rootNavController.popBackStack()
-                    }
-                }
-            )
-        }
-        composable(
-            route = Screen.WakeUpScreenSettings.route,
-            enterTransition = { fadeIn(animationSpec = tween(300)) },
-            exitTransition = { fadeOut(animationSpec = tween(300)) },
-            popEnterTransition = { fadeIn(animationSpec = tween(300)) },
-            popExitTransition = { fadeOut(animationSpec = tween(300)) }
-        ) {
-            com.arslan.primenotify.ui.settings.WakeUpScreenSettingsScreen(
-                onNavigateBack = {
-                    if (rootNavController.previousBackStackEntry != null) {
-                        rootNavController.popBackStack()
-                    }
-                },
-                onNavigateToAddEditRule = { ruleId ->
-                    rootNavController.navigate(Screen.AddEditWakeUpRule.createRoute(ruleId))
-                }
-            )
-        }
-        composable(
-            route = Screen.AddEditWakeUpRule.route,
-            enterTransition = { fadeIn(animationSpec = tween(300)) },
-            exitTransition = { fadeOut(animationSpec = tween(300)) },
-            popEnterTransition = { fadeIn(animationSpec = tween(300)) },
-            popExitTransition = { fadeOut(animationSpec = tween(300)) }
-        ) { backStackEntry ->
-            val ruleId = backStackEntry.arguments?.getString("ruleId")
-            com.arslan.primenotify.ui.settings.AddEditWakeUpRuleScreen(
-                ruleId = ruleId,
-                onNavigateBack = {
-                    if (rootNavController.previousBackStackEntry != null) {
-                        rootNavController.popBackStack()
-                    }
-                }
-            )
-        }
-        composable(
-            route = Screen.AODSettings.route,
-            enterTransition = { fadeIn(animationSpec = tween(300)) },
-            exitTransition = { fadeOut(animationSpec = tween(300)) },
-            popEnterTransition = { fadeIn(animationSpec = tween(300)) },
-            popExitTransition = { fadeOut(animationSpec = tween(300)) }
-        ) {
-            com.arslan.primenotify.ui.settings.AODSettingsScreen(
-                onNavigateBack = {
-                    if (rootNavController.previousBackStackEntry != null) {
-                        rootNavController.popBackStack()
-                    }
-                },
-                onNavigateToAddEditRule = { ruleId ->
-                    rootNavController.navigate(Screen.AddEditAodRule.createRoute(ruleId))
-                }
-            )
-        }
-        composable(
-            route = Screen.AddEditAodRule.route,
-            enterTransition = { fadeIn(animationSpec = tween(300)) },
-            exitTransition = { fadeOut(animationSpec = tween(300)) },
-            popEnterTransition = { fadeIn(animationSpec = tween(300)) },
-            popExitTransition = { fadeOut(animationSpec = tween(300)) }
-        ) { backStackEntry ->
-            val ruleId = backStackEntry.arguments?.getString("ruleId")
-            com.arslan.primenotify.ui.settings.AddEditAodRuleScreen(
-                ruleId = ruleId,
-                onNavigateBack = {
-                    if (rootNavController.previousBackStackEntry != null) {
-                        rootNavController.popBackStack()
-                    }
-                }
-            )
-        }
-        composable(
             route = Screen.CreatePattern.route,
-            enterTransition = { fadeIn(animationSpec = tween(300)) },
-            exitTransition = { fadeOut(animationSpec = tween(300)) },
-            popEnterTransition = { fadeIn(animationSpec = tween(300)) },
-            popExitTransition = { fadeOut(animationSpec = tween(300)) }
+            enterTransition = { slideInHorizontally(initialOffsetX = { it }) + fadeIn(animationSpec = tween(300)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut(animationSpec = tween(300)) },
+            popEnterTransition = { slideInHorizontally(initialOffsetX = { it }) + fadeIn(animationSpec = tween(300)) },
+            popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut(animationSpec = tween(300)) }
         ) {
             com.arslan.primenotify.ui.settings.CreatePatternScreen(
                 onNavigateBack = {
@@ -293,9 +215,7 @@ fun MainFlowScreen(rootNavController: NavController) {
                 popExitTransition = { slideOutHorizontally(targetOffsetX = { -it }) }
             ) {
                 HomeScreen(
-                    onNavigateToFlashSettings = { rootNavController.navigate(Screen.FlashSettings.route) },
-                    onNavigateToWakeUpScreenSettings = { rootNavController.navigate(Screen.WakeUpScreenSettings.route) },
-                    onNavigateToAODSettings = { rootNavController.navigate(Screen.AODSettings.route) }
+                    onNavigateToRules = { rootNavController.navigate(Screen.Rules.route) }
                 )
             }
             composable(

@@ -7,13 +7,14 @@ import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import com.arslan.primenotify.data.FlashPattern
 import com.arslan.primenotify.data.LoggingManager
 import com.arslan.primenotify.data.MatchedRuleInfo
 import com.arslan.primenotify.data.RuleType
 import com.arslan.primenotify.data.RulesManager
 
 class PrimeNotifyListenerService : NotificationListenerService() {
-    
+
     private lateinit var rulesManager: RulesManager
     private lateinit var flashManager: FlashManager
     private lateinit var screenWakeManager: ScreenWakeManager
@@ -37,9 +38,7 @@ class PrimeNotifyListenerService : NotificationListenerService() {
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
-        if (!isPrimeNotifyServiceEnabled(this) || sbn == null) {
-            return
-        }
+        if (!isPrimeNotifyServiceEnabled(this) || sbn == null) return
 
         val packageName = sbn.packageName
         val extras = sbn.notification.extras
@@ -47,10 +46,9 @@ class PrimeNotifyListenerService : NotificationListenerService() {
         val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
         val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
         val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString() ?: ""
-
         val searchBody = "$title $text $bigText".lowercase()
 
-        // Read ringer/DND state once, shared across all rule checks
+        // Read ringer/DND state once for all rule checks
         val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val ringerMode = am.ringerMode
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -60,154 +58,96 @@ class PrimeNotifyListenerService : NotificationListenerService() {
         val isSilent = ringerMode == AudioManager.RINGER_MODE_SILENT
         val isDND = interruptionFilter != NotificationManager.INTERRUPTION_FILTER_ALL
 
-        val loggedRules = mutableListOf<MatchedRuleInfo>()
+        val allLoggedRules = mutableListOf<MatchedRuleInfo>()
 
-        // ── Flash rule matching ───────────────────────────────────────────────
-        val activeFlashRules = rulesManager.getFlashRules().filter { it.isEnabled }
-
-        val matchedFlashRule = activeFlashRules.firstOrNull { rule ->
-            rule.packageNames.contains(packageName) &&
-                (rule.keywords.isEmpty() || rule.keywords.any { kw -> searchBody.contains(kw.lowercase()) })
+        val appName = try {
+            packageManager.getApplicationLabel(
+                packageManager.getApplicationInfo(packageName, 0)
+            ).toString()
+        } catch (e: PackageManager.NameNotFoundException) {
+            packageName
         }
 
-        if (matchedFlashRule != null) {
+        for (rule in rulesManager.getRules().filter { it.isEnabled }) {
+            val isMatch = rule.packageNames.contains(packageName) &&
+                (rule.keywords.isEmpty() || rule.keywords.any { kw -> searchBody.contains(kw.lowercase()) })
+            if (!isMatch) continue
+
+            // Evaluate shared conditions once per rule
             var shouldExecute = true
-            if (matchedFlashRule.preventMultipleNotifications && rulesManager.shouldThrottleRule(matchedFlashRule.id)) {
+            if (rule.preventMultipleNotifications && rulesManager.shouldThrottleRule(rule.id)) {
                 shouldExecute = false
             }
-            if (isVibration && !matchedFlashRule.applyOnVibration) shouldExecute = false
-            if (isSilent && !matchedFlashRule.applyOnSilent) shouldExecute = false
-            if (isDND && !matchedFlashRule.applyOnDND) shouldExecute = false
+            if (isVibration && !rule.applyOnVibration) shouldExecute = false
+            if (isSilent && !rule.applyOnSilent) shouldExecute = false
+            if (isDND && !rule.applyOnDND) shouldExecute = false
 
-            if (shouldExecute) {
-                rulesManager.updateRuleExecutionTime(matchedFlashRule.id)
-                val customPattern = matchedFlashRule.customPatternId?.let { id ->
-                    rulesManager.getCustomPatterns().find { it.id == id }
+            if (shouldExecute) rulesManager.updateRuleExecutionTime(rule.id)
+
+            val ruleLabel = buildRuleLabel(rule.appNames, rule.keywords)
+
+            for (action in rule.actions) {
+                if (shouldExecute) {
+                    when (action.type) {
+                        RuleType.FLASH -> {
+                            val customPattern = action.customPatternId?.let { id ->
+                                rulesManager.getCustomPatterns().find { it.id == id }
+                            }
+                            if (customPattern != null) {
+                                flashManager.executeCustomPattern(customPattern.intervals)
+                            } else {
+                                flashManager.executePattern(action.flashPattern ?: FlashPattern.HEARTBEAT)
+                            }
+                        }
+                        RuleType.WAKE_UP -> {
+                            screenWakeManager.wakeScreen(
+                                durationSeconds = action.screenDurationSeconds ?: 10,
+                                pocketModeEnabled = action.pocketModeEnabled ?: true,
+                            )
+                        }
+                        RuleType.AOD -> {
+                            aodManager.triggerAod(durationSeconds = action.aodDurationSeconds ?: 10)
+                        }
+                    }
                 }
-                if (customPattern != null) {
-                    flashManager.executeCustomPattern(customPattern.intervals)
-                } else {
-                    flashManager.executePattern(matchedFlashRule.pattern)
-                }
-            }
-
-            loggedRules.add(
-                MatchedRuleInfo(
-                    ruleId = matchedFlashRule.id,
-                    ruleName = buildRuleLabel(matchedFlashRule.appNames, matchedFlashRule.keywords),
-                    ruleType = RuleType.FLASH,
-                    wasExecuted = shouldExecute
-                )
-            )
-        }
-
-        // ── Wake-up rule matching ─────────────────────────────────────────────
-        val activeWakeUpRules = rulesManager.getWakeUpRules().filter { it.isEnabled }
-
-        val matchedWakeUpRule = activeWakeUpRules.firstOrNull { rule ->
-            rule.packageNames.contains(packageName) &&
-                (rule.keywords.isEmpty() || rule.keywords.any { kw -> searchBody.contains(kw.lowercase()) })
-        }
-
-        if (matchedWakeUpRule != null) {
-            var shouldExecute = true
-            if (matchedWakeUpRule.preventMultipleNotifications && rulesManager.shouldThrottleRule(matchedWakeUpRule.id)) {
-                shouldExecute = false
-            }
-            if (isVibration && !matchedWakeUpRule.applyOnVibration) shouldExecute = false
-            if (isSilent && !matchedWakeUpRule.applyOnSilent) shouldExecute = false
-            if (isDND && !matchedWakeUpRule.applyOnDND) shouldExecute = false
-
-            if (shouldExecute) {
-                rulesManager.updateRuleExecutionTime(matchedWakeUpRule.id)
-                screenWakeManager.wakeScreen(
-                    durationSeconds = matchedWakeUpRule.screenDurationSeconds,
-                    pocketModeEnabled = matchedWakeUpRule.pocketModeEnabled
+                allLoggedRules.add(
+                    MatchedRuleInfo(
+                        ruleId = rule.id,
+                        ruleName = ruleLabel,
+                        ruleType = action.type,
+                        wasExecuted = shouldExecute,
+                    )
                 )
             }
-
-            loggedRules.add(
-                MatchedRuleInfo(
-                    ruleId = matchedWakeUpRule.id,
-                    ruleName = buildRuleLabel(matchedWakeUpRule.appNames, matchedWakeUpRule.keywords),
-                    ruleType = RuleType.WAKE_UP,
-                    wasExecuted = shouldExecute
-                )
-            )
         }
 
-        // ── AOD rule matching ─────────────────────────────────────────────────
-        val activeAodRules = rulesManager.getAodRules().filter { it.isEnabled }
-
-        val matchedAodRule = activeAodRules.firstOrNull { rule ->
-            rule.packageNames.contains(packageName) &&
-                (rule.keywords.isEmpty() || rule.keywords.any { kw -> searchBody.contains(kw.lowercase()) })
-        }
-
-        if (matchedAodRule != null) {
-            var shouldExecute = true
-            if (matchedAodRule.preventMultipleNotifications && rulesManager.shouldThrottleRule(matchedAodRule.id)) {
-                shouldExecute = false
-            }
-            if (isVibration && !matchedAodRule.applyOnVibration) shouldExecute = false
-            if (isSilent && !matchedAodRule.applyOnSilent) shouldExecute = false
-            if (isDND && !matchedAodRule.applyOnDND) shouldExecute = false
-
-            if (shouldExecute) {
-                rulesManager.updateRuleExecutionTime(matchedAodRule.id)
-                aodManager.triggerAod(durationSeconds = matchedAodRule.durationSeconds)
-            }
-
-            loggedRules.add(
-                MatchedRuleInfo(
-                    ruleId = matchedAodRule.id,
-                    ruleName = buildRuleLabel(matchedAodRule.appNames, matchedAodRule.keywords),
-                    ruleType = RuleType.AOD,
-                    wasExecuted = shouldExecute
-                )
-            )
-        }
-
-        // ── Log once if at least one rule matched ─────────────────────────────
-        if (loggedRules.isNotEmpty()) {
-            val appName = try {
-                packageManager.getApplicationLabel(
-                    packageManager.getApplicationInfo(packageName, 0)
-                ).toString()
-            } catch (e: PackageManager.NameNotFoundException) {
-                packageName
-            }
+        if (allLoggedRules.isNotEmpty()) {
             loggingManager.logNotification(
                 packageName = packageName,
                 appName = appName,
                 title = title,
                 body = bigText.ifBlank { text },
-                matchedRules = loggedRules
+                matchedRules = allLoggedRules,
             )
         }
 
         super.onNotificationPosted(sbn)
     }
 
-    /**
-     * Builds a human-readable rule label from its target app names and keywords.
-     * Examples: "WhatsApp", "WhatsApp, Telegram", "WhatsApp – work, urgent"
-     */
-    private fun buildRuleLabel(appNames: List<String>, keywords: List<String>): String {
-        val appsLabel = appNames.joinToString(", ").ifBlank { "?" }
-        return if (keywords.isEmpty()) appsLabel else "$appsLabel – ${keywords.joinToString(", ")}"
-    }
-
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
         super.onNotificationRemoved(sbn)
         if (sbn != null && isPrimeNotifyServiceEnabled(this)) {
-            val activeAodRules = rulesManager.getAodRules().filter { it.isEnabled && it.durationSeconds == -1 }
-            val matchedAodRule = activeAodRules.firstOrNull { rule ->
-                rule.packageNames.contains(sbn.packageName)
+            val matched = rulesManager.getRules().filter { it.isEnabled }.firstOrNull { rule ->
+                rule.packageNames.contains(sbn.packageName) &&
+                    rule.actions.any { it.type == RuleType.AOD && it.aodDurationSeconds == -1 }
             }
-            if (matchedAodRule != null) {
-                aodManager.stopAodForReason(-1)
-            }
+            if (matched != null) aodManager.stopAodForReason(-1)
         }
+    }
+
+    /** E.g. "WhatsApp", "WhatsApp, Telegram", "WhatsApp – work, urgent" */
+    private fun buildRuleLabel(appNames: List<String>, keywords: List<String>): String {
+        val appsLabel = appNames.joinToString(", ").ifBlank { "?" }
+        return if (keywords.isEmpty()) appsLabel else "$appsLabel – ${keywords.joinToString(", ")}"
     }
 }
