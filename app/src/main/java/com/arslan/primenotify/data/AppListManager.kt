@@ -76,6 +76,9 @@ object AppListManager {
         }
     }
 
+    fun getIconForPackage(packageName: String): ImageBitmap? =
+        _installedApps.value.find { it.packageName == packageName }?.icon
+
     private const val ICON_SIZE_PX = 48
 
     private fun drawableToImageBitmap(drawable: Drawable): ImageBitmap {

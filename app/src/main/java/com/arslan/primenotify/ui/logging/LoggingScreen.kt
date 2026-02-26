@@ -1,7 +1,5 @@
 package com.arslan.primenotify.ui.logging
 
-import android.content.pm.PackageManager
-import android.graphics.drawable.Drawable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -45,14 +43,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -65,6 +62,7 @@ import com.arslan.primenotify.data.LogEntry
 import com.arslan.primenotify.data.MatchedRuleInfo
 import com.arslan.primenotify.data.RuleType
 import android.content.Context
+import androidx.core.graphics.drawable.toBitmap
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -78,6 +76,7 @@ fun LoggingScreen(
 ) {
     val logs by viewModel.logs.collectAsState()
     val filter by viewModel.filter.collectAsState()
+    val iconCache by viewModel.iconCache.collectAsState()
     var showClearDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -156,7 +155,7 @@ fun LoggingScreen(
                     )
                 ) {
                     items(logs, key = { it.id }) { entry ->
-                        LogItem(entry = entry)
+                        LogItem(entry = entry, icon = iconCache[entry.packageName])
                     }
                 }
             }
@@ -195,16 +194,8 @@ fun LoggingScreen(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun LogItem(entry: LogEntry) {
+private fun LogItem(entry: LogEntry, icon: ImageBitmap?) {
     val context = LocalContext.current
-
-    val appIcon by produceState<Drawable?>(initialValue = null, key1 = entry.packageName) {
-        value = try {
-            context.packageManager.getApplicationIcon(entry.packageName)
-        } catch (e: PackageManager.NameNotFoundException) {
-            null
-        }
-    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -220,27 +211,26 @@ private fun LogItem(entry: LogEntry) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 // App icon
-                val bitmap = appIcon?.toBitmap(48, 48)
-                if (bitmap != null) {
+                if (icon != null) {
                     Image(
-                        bitmap = bitmap.asImageBitmap(),
+                        bitmap = icon,
                         contentDescription = null,
                         modifier = Modifier
-                            .size(32.dp)
+                            .size(24.dp)
                             .clip(CircleShape)
                     )
                 } else {
                     // Fallback: coloured circle with first letter
                     Box(
                         modifier = Modifier
-                            .size(32.dp)
+                            .size(24.dp)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.primary),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = entry.appName.take(1).uppercase(),
-                            style = MaterialTheme.typography.labelLarge,
+                            style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                     }

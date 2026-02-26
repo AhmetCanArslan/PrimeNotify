@@ -1,8 +1,10 @@
 package com.arslan.primenotify.ui.logging
 
 import android.app.Application
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.arslan.primenotify.data.AppListManager
 import com.arslan.primenotify.data.LogEntry
 import com.arslan.primenotify.data.LoggingManager
 import com.arslan.primenotify.data.RuleType
@@ -23,6 +25,9 @@ class LoggingViewModel(application: Application) : AndroidViewModel(application)
     private val _logs = MutableStateFlow<List<LogEntry>>(emptyList())
     val logs: StateFlow<List<LogEntry>> = _logs.asStateFlow()
 
+    private val _iconCache = MutableStateFlow<Map<String, ImageBitmap?>>(emptyMap())
+    val iconCache: StateFlow<Map<String, ImageBitmap?>> = _iconCache.asStateFlow()
+
     init {
         refreshLogs()
     }
@@ -36,14 +41,27 @@ class LoggingViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch(Dispatchers.IO) {
             loggingManager.clearLogs()
             val result = loggingManager.getLogs(null)
-            withContext(Dispatchers.Main) { _logs.value = result }
+            val icons = buildIconCache(result)
+            withContext(Dispatchers.Main) {
+                _logs.value = result
+                _iconCache.value = icons
+            }
         }
     }
 
     private fun refreshLogs() {
         viewModelScope.launch(Dispatchers.IO) {
             val result = loggingManager.getLogs(_filter.value)
-            withContext(Dispatchers.Main) { _logs.value = result }
+            val icons = buildIconCache(result)
+            withContext(Dispatchers.Main) {
+                _logs.value = result
+                _iconCache.value = icons
+            }
         }
     }
+
+    private fun buildIconCache(logs: List<LogEntry>): Map<String, ImageBitmap?> =
+        logs.map { it.packageName }
+            .distinct()
+            .associateWith { AppListManager.getIconForPackage(it) }
 }
