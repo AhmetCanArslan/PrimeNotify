@@ -74,9 +74,15 @@ fun AddEditRuleScreen(
         )
     }
 
-    // Keywords
-    var keywords by remember(initialRule) { mutableStateOf(initialRule?.keywords ?: emptyList()) }
-    var currentKeyword by remember { mutableStateOf("") }
+    // Title & Body Keywords (new; legacy `keywords` pre-populated into title for migration)
+    var titleKeywords by remember(initialRule) {
+        mutableStateOf(
+            initialRule?.titleKeywords?.ifEmpty { initialRule.keywords } ?: emptyList()
+        )
+    }
+    var currentTitleKeyword by remember { mutableStateOf("") }
+    var bodyKeywords by remember(initialRule) { mutableStateOf(initialRule?.bodyKeywords ?: emptyList()) }
+    var currentBodyKeyword by remember { mutableStateOf("") }
 
     // Flash action state
     var customPatterns by remember { mutableStateOf(rulesManager.getCustomPatterns()) }
@@ -173,7 +179,9 @@ fun AddEditRuleScreen(
                                 val newRule = initialRule?.copy(
                                     packageNames = selectedApps.map { it.packageName },
                                     appNames = selectedApps.map { it.name },
-                                    keywords = keywords,
+                                    keywords = emptyList(),
+                                    titleKeywords = titleKeywords,
+                                    bodyKeywords = bodyKeywords,
                                     actions = actions,
                                     applyOnVibration = applyOnVibration,
                                     applyOnSilent = applyOnSilent,
@@ -182,7 +190,9 @@ fun AddEditRuleScreen(
                                 ) ?: NotificationRule(
                                     packageNames = selectedApps.map { it.packageName },
                                     appNames = selectedApps.map { it.name },
-                                    keywords = keywords,
+                                    keywords = emptyList(),
+                                    titleKeywords = titleKeywords,
+                                    bodyKeywords = bodyKeywords,
                                     actions = actions,
                                     applyOnVibration = applyOnVibration,
                                     applyOnSilent = applyOnSilent,
@@ -236,8 +246,15 @@ fun AddEditRuleScreen(
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
+
+                        // ── Title keywords ────────────────────────────────────
+                        Text(
+                            stringResource(R.string.trigger_title_keywords),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                         AnimatedVisibility(
-                            visible = keywords.isNotEmpty(),
+                            visible = titleKeywords.isNotEmpty(),
                             enter = fadeIn() + expandVertically(),
                             exit = fadeOut() + shrinkVertically()
                         ) {
@@ -247,9 +264,9 @@ fun AddEditRuleScreen(
                                     .padding(bottom = 4.dp),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                items(keywords, key = { it }) { kw ->
+                                items(titleKeywords, key = { it }) { kw ->
                                     AssistChip(
-                                        onClick = { keywords = keywords - kw },
+                                        onClick = { titleKeywords = titleKeywords - kw },
                                         label = { Text(kw) },
                                         trailingIcon = {
                                             Icon(
@@ -263,30 +280,99 @@ fun AddEditRuleScreen(
                             }
                         }
                         OutlinedTextField(
-                            value = currentKeyword,
-                            onValueChange = { currentKeyword = it },
-                            label = { Text(stringResource(R.string.add_keyword_optional)) },
+                            value = currentTitleKeyword,
+                            onValueChange = { currentTitleKeyword = it },
+                            label = { Text(stringResource(R.string.add_title_keyword_optional)) },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(
                                 onDone = {
-                                    val kw = currentKeyword.trim()
-                                    if (kw.isNotBlank() && !keywords.contains(kw)) {
-                                        keywords = keywords + kw
-                                        currentKeyword = ""
+                                    val kw = currentTitleKeyword.trim()
+                                    if (kw.isNotBlank() && !titleKeywords.contains(kw)) {
+                                        titleKeywords = titleKeywords + kw
+                                        currentTitleKeyword = ""
                                     }
                                 }
                             ),
                             trailingIcon = {
                                 IconButton(
                                     onClick = {
-                                        val kw = currentKeyword.trim()
-                                        if (kw.isNotBlank() && !keywords.contains(kw)) {
-                                            keywords = keywords + kw
-                                            currentKeyword = ""
+                                        val kw = currentTitleKeyword.trim()
+                                        if (kw.isNotBlank() && !titleKeywords.contains(kw)) {
+                                            titleKeywords = titleKeywords + kw
+                                            currentTitleKeyword = ""
                                         }
                                     },
-                                    enabled = currentKeyword.isNotBlank()
+                                    enabled = currentTitleKeyword.isNotBlank()
+                                ) {
+                                    Icon(
+                                        Icons.Default.Add,
+                                        contentDescription = stringResource(R.string.cd_add)
+                                    )
+                                }
+                            },
+                            singleLine = true
+                        )
+
+                        HorizontalDivider()
+
+                        // ── Body keywords ─────────────────────────────────────
+                        Text(
+                            stringResource(R.string.trigger_body_keywords),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        AnimatedVisibility(
+                            visible = bodyKeywords.isNotEmpty(),
+                            enter = fadeIn() + expandVertically(),
+                            exit = fadeOut() + shrinkVertically()
+                        ) {
+                            LazyRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(bodyKeywords, key = { it }) { kw ->
+                                    AssistChip(
+                                        onClick = { bodyKeywords = bodyKeywords - kw },
+                                        label = { Text(kw) },
+                                        trailingIcon = {
+                                            Icon(
+                                                Icons.Default.Close,
+                                                contentDescription = stringResource(R.string.cd_remove)
+                                            )
+                                        },
+                                        modifier = Modifier.animateItem()
+                                    )
+                                }
+                            }
+                        }
+                        OutlinedTextField(
+                            value = currentBodyKeyword,
+                            onValueChange = { currentBodyKeyword = it },
+                            label = { Text(stringResource(R.string.add_body_keyword_optional)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    val kw = currentBodyKeyword.trim()
+                                    if (kw.isNotBlank() && !bodyKeywords.contains(kw)) {
+                                        bodyKeywords = bodyKeywords + kw
+                                        currentBodyKeyword = ""
+                                    }
+                                }
+                            ),
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = {
+                                        val kw = currentBodyKeyword.trim()
+                                        if (kw.isNotBlank() && !bodyKeywords.contains(kw)) {
+                                            bodyKeywords = bodyKeywords + kw
+                                            currentBodyKeyword = ""
+                                        }
+                                    },
+                                    enabled = currentBodyKeyword.isNotBlank()
                                 ) {
                                     Icon(
                                         Icons.Default.Add,

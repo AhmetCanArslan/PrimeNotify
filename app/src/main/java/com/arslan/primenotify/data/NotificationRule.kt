@@ -32,6 +32,14 @@ data class NotificationRule(
     @SerializedName("keywords")
     val keywords: List<String> = emptyList(),
 
+    /** Keywords matched only against the notification title. */
+    @SerializedName("titleKeywords")
+    val titleKeywords: List<String> = emptyList(),
+
+    /** Keywords matched only against the notification body/text. */
+    @SerializedName("bodyKeywords")
+    val bodyKeywords: List<String> = emptyList(),
+
     /** At least one action must be present for the rule to do anything. */
     @SerializedName("actions")
     val actions: List<RuleAction>,

@@ -52,6 +52,8 @@ class PrimeNotifyListenerService : NotificationListenerService() {
         val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
         val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString() ?: ""
         val searchBody = "$title $text $bigText".lowercase()
+        val titleLower = title.lowercase()
+        val bodyLower = "$text $bigText".lowercase()
 
         // Read ringer/DND state once for all rule checks
         val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -75,7 +77,9 @@ class PrimeNotifyListenerService : NotificationListenerService() {
 
         for (rule in rulesManager.getRules().filter { it.isEnabled }) {
             val isMatch = rule.packageNames.contains(packageName) &&
-                (rule.keywords.isEmpty() || rule.keywords.any { kw -> searchBody.contains(kw.lowercase()) })
+                (rule.keywords.isEmpty() || rule.keywords.any { kw -> searchBody.contains(kw.lowercase()) }) &&
+                (rule.titleKeywords.isEmpty() || rule.titleKeywords.any { kw -> titleLower.contains(kw.lowercase()) }) &&
+                (rule.bodyKeywords.isEmpty() || rule.bodyKeywords.any { kw -> bodyLower.contains(kw.lowercase()) })
             if (!isMatch) continue
 
             // Evaluate shared conditions once per rule
@@ -89,7 +93,7 @@ class PrimeNotifyListenerService : NotificationListenerService() {
 
             if (shouldExecute) rulesManager.updateRuleExecutionTime(rule.id)
 
-            val ruleLabel = buildRuleLabel(rule.appNames, rule.keywords)
+            val ruleLabel = buildRuleLabel(rule.appNames, rule.keywords, rule.titleKeywords, rule.bodyKeywords)
 
             for (action in rule.actions) {
                 if (shouldExecute) {
@@ -148,10 +152,14 @@ class PrimeNotifyListenerService : NotificationListenerService() {
         }
     }
 
-    /** E.g. "WhatsApp", "WhatsApp, Telegram", "WhatsApp – work, urgent" */
-    private fun buildRuleLabel(appNames: List<String>, keywords: List<String>): String {
+    /** E.g. "WhatsApp", "WhatsApp, Telegram", "WhatsApp – title:urgent, body:invoice" */
+    private fun buildRuleLabel(appNames: List<String>, keywords: List<String>, titleKeywords: List<String>, bodyKeywords: List<String>): String {
         val appsLabel = appNames.joinToString(", ").ifBlank { "?" }
-        return if (keywords.isEmpty()) appsLabel else "$appsLabel – ${keywords.joinToString(", ")}"
+        val parts = mutableListOf<String>()
+        if (keywords.isNotEmpty()) parts.add(keywords.joinToString(", "))
+        if (titleKeywords.isNotEmpty()) parts.add("title: ${titleKeywords.joinToString("|")}") 
+        if (bodyKeywords.isNotEmpty()) parts.add("body: ${bodyKeywords.joinToString("|")}")  
+        return if (parts.isEmpty()) appsLabel else "$appsLabel \u2013 ${parts.joinToString("; ")}"
     }
 
     private fun startPersistentNotification() {

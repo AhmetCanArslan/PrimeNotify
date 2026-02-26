@@ -113,6 +113,10 @@
     <string name="create_aod_rule_title">AOD Kuralı Oluştur</string>
     <string name="save">Kaydet</string>
     <string name="trigger_keywords">Tetikleyici Anahtar Kelimeler</string>
+    <string name="trigger_title_keywords">Bildirim Başlığı</string>
+    <string name="trigger_body_keywords">Bildirim İçeriği</string>
+    <string name="add_title_keyword_optional">Başlık Anahtar Kelimesi Ekle (İsteğe Bağlı)</string>
+    <string name="add_body_keyword_optional">İçerik Anahtar Kelimesi Ekle (İsteğe Bağlı)</string>
     <string name="remove">Kaldır</string>
     <string name="add_keyword_optional">Anahtar Kelime Ekle (İsteğe Bağlı)</string>
     <string name="add_keyword">Anahtar Kelime Ekle</string>

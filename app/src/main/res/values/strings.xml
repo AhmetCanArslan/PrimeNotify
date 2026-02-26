@@ -113,6 +113,10 @@
     <string name="create_aod_rule_title">Create AOD Rule</string>
     <string name="save">Save</string>
     <string name="trigger_keywords">Trigger Keywords</string>
+    <string name="trigger_title_keywords">Notification Title</string>
+    <string name="trigger_body_keywords">Notification Body</string>
+    <string name="add_title_keyword_optional">Add Title Keyword (Optional)</string>
+    <string name="add_body_keyword_optional">Add Body Keyword (Optional)</string>
     <string name="remove">Remove</string>
     <string name="add_keyword_optional">Add Keyword (Optional)</string>
     <string name="add_keyword">Add Keyword</string>
