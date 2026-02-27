@@ -217,6 +217,20 @@ Ignore a notification from the logs to suppress it in the future.</string>
     <string name="logs_create_rule_description">Body: "%1$s"</string>
     <string name="logs_create_rule_confirm">Create Rule</string>
     <string name="logs_create_rule_cd">Create rule from notification</string>
+    <string name="logs_search_cd">Search notifications</string>
+    <string name="logs_search_hint">Search by app, title, or description…</string>
+    <string name="logs_settings">Log Settings</string>
+    <string name="logs_settings_done">Done</string>
+    <string name="logs_auto_delete_title">Auto-delete after</string>
+    <string name="logs_auto_delete_never">Never</string>
+    <string name="logs_auto_delete_1d">1 day</string>
+    <string name="logs_auto_delete_3d">3 days</string>
+    <string name="logs_auto_delete_7d">7 days</string>
+    <string name="logs_auto_delete_30d">30 days</string>
+    <string name="logs_only_rule_matched">Show only rule-matched</string>
+    <string name="logs_only_rule_matched_desc">Only show notifications that matched at least one rule</string>
+    <string name="logs_show_system_apps">Show system apps</string>
+    <string name="logs_show_system_apps_desc">Include notifications from system and background apps</string>
 
     <!-- Unified Rules -->
     <string name="notification_persistent_text">Monitoring notifications in the background</string>

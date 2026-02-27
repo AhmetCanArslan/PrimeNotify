@@ -1,5 +1,8 @@
 package com.arslan.primenotify.ui.logging
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,13 +23,18 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.NotificationsOff
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.AddCircleOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -42,8 +50,11 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -59,8 +70,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
@@ -88,11 +101,19 @@ fun LoggingScreen(
     val logs by viewModel.logs.collectAsState()
     val filter by viewModel.filter.collectAsState()
     val iconCache by viewModel.iconCache.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val onlyRuleMatched by viewModel.onlyRuleMatched.collectAsState()
+    val showSystemApps by viewModel.showSystemApps.collectAsState()
+    val autoDeleteDays by viewModel.autoDeleteDays.collectAsState()
+    val focusManager = LocalFocusManager.current
+
     var showClearDialog by remember { mutableStateOf(false) }
     var ignoreTarget by remember { mutableStateOf<LogEntry?>(null) }
     var deleteTarget by remember { mutableStateOf<LogEntry?>(null) }
     var createRuleTarget by remember { mutableStateOf<LogEntry?>(null) }
     var showOverflowMenu by remember { mutableStateOf(false) }
+    var showSettingsDialog by remember { mutableStateOf(false) }
+    var isSearchVisible by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -107,6 +128,15 @@ fun LoggingScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = {
+                        isSearchVisible = !isSearchVisible
+                        if (!isSearchVisible) viewModel.setSearchQuery("")
+                    }) {
+                        Icon(
+                            imageVector = if (isSearchVisible) Icons.Default.Close else Icons.Default.Search,
+                            contentDescription = stringResource(R.string.logs_search_cd)
+                        )
+                    }
                     if (logs.isNotEmpty()) {
                         IconButton(onClick = { showClearDialog = true }) {
                             Icon(
@@ -126,6 +156,19 @@ fun LoggingScreen(
                             expanded = showOverflowMenu,
                             onDismissRequest = { showOverflowMenu = false }
                         ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.logs_settings)) },
+                                onClick = {
+                                    showOverflowMenu = false
+                                    showSettingsDialog = true
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Settings,
+                                        contentDescription = null
+                                    )
+                                }
+                            )
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.nav_ignored_notifications)) },
                                 onClick = {
@@ -150,6 +193,38 @@ fun LoggingScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+            // Search bar
+            AnimatedVisibility(
+                visible = isSearchVisible,
+                enter = expandVertically(),
+                exit = shrinkVertically()
+            ) {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { viewModel.setSearchQuery(it) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 4.dp),
+                    placeholder = { Text(stringResource(R.string.logs_search_hint)) },
+                    leadingIcon = {
+                        Icon(Icons.Default.Search, contentDescription = null)
+                    },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { viewModel.setSearchQuery("") }) {
+                                Icon(
+                                    Icons.Default.Close,
+                                    contentDescription = stringResource(R.string.cd_clear_search)
+                                )
+                            }
+                        }
+                    },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() })
+                )
+            }
+
             // Filter chips
             LazyRow(
                 modifier = Modifier
@@ -427,6 +502,138 @@ fun LoggingScreen(
             }
         )
     }
+
+    // Settings dialog
+    if (showSettingsDialog) {
+        LogSettingsDialog(
+            autoDeleteDays = autoDeleteDays,
+            onlyRuleMatched = onlyRuleMatched,
+            showSystemApps = showSystemApps,
+            onAutoDeleteDaysChanged = { viewModel.setAutoDeleteDays(it) },
+            onOnlyRuleMatchedChanged = { viewModel.setOnlyRuleMatched(it) },
+            onShowSystemAppsChanged = { viewModel.setShowSystemApps(it) },
+            onDismiss = { showSettingsDialog = false }
+        )
+    }
+}
+
+@Composable
+private fun LogSettingsDialog(
+    autoDeleteDays: Int,
+    onlyRuleMatched: Boolean,
+    showSystemApps: Boolean,
+    onAutoDeleteDaysChanged: (Int) -> Unit,
+    onOnlyRuleMatchedChanged: (Boolean) -> Unit,
+    onShowSystemAppsChanged: (Boolean) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val deleteOptions = listOf(
+        0 to stringResource(R.string.logs_auto_delete_never),
+        1 to stringResource(R.string.logs_auto_delete_1d),
+        3 to stringResource(R.string.logs_auto_delete_3d),
+        7 to stringResource(R.string.logs_auto_delete_7d),
+        30 to stringResource(R.string.logs_auto_delete_30d)
+    )
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(R.string.logs_settings),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                // ---- Auto-delete section ----
+                Text(
+                    text = stringResource(R.string.logs_auto_delete_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+                    deleteOptions.forEach { (days, label) ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            RadioButton(
+                                selected = autoDeleteDays == days,
+                                onClick = { onAutoDeleteDaysChanged(days) }
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                }
+
+                HorizontalDivider()
+
+                // ---- Show only rule-matched ----
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.logs_only_rule_matched),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = stringResource(R.string.logs_only_rule_matched_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Switch(
+                        checked = onlyRuleMatched,
+                        onCheckedChange = onOnlyRuleMatchedChanged
+                    )
+                }
+
+                // ---- Show system apps ----
+                AnimatedVisibility(
+                    visible = !onlyRuleMatched,
+                    enter = expandVertically(),
+                    exit = shrinkVertically()
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.logs_show_system_apps),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = stringResource(R.string.logs_show_system_apps_desc),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Switch(
+                            checked = showSystemApps,
+                            onCheckedChange = onShowSystemAppsChanged
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.logs_settings_done))
+            }
+        }
+    )
 }
 
 @OptIn(ExperimentalLayoutApi::class)

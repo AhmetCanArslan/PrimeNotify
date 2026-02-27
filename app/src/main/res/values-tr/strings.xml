@@ -217,6 +217,20 @@ Gelecekte bastırmak için günlüklerden bir bildirimi yoksayın.</string>
     <string name="logs_create_rule_description">İçerik: "%1$s"</string>
     <string name="logs_create_rule_confirm">Kural Oluştur</string>
     <string name="logs_create_rule_cd">Bildirimden kural oluştur</string>
+    <string name="logs_search_cd">Bildirimleri ara</string>
+    <string name="logs_search_hint">Uygulama, başlık veya açıklamaya göre ara…</string>
+    <string name="logs_settings">Günlük Ayarları</string>
+    <string name="logs_settings_done">Tamam</string>
+    <string name="logs_auto_delete_title">Otomatik sil</string>
+    <string name="logs_auto_delete_never">Asla</string>
+    <string name="logs_auto_delete_1d">1 gün</string>
+    <string name="logs_auto_delete_3d">3 gün</string>
+    <string name="logs_auto_delete_7d">7 gün</string>
+    <string name="logs_auto_delete_30d">30 gün</string>
+    <string name="logs_only_rule_matched">Sadece kural eşleşenleri göster</string>
+    <string name="logs_only_rule_matched_desc">Yalnızca en az bir kuralla eşleşen bildirimleri göster</string>
+    <string name="logs_show_system_apps">Sistem uygulamalarını göster</string>
+    <string name="logs_show_system_apps_desc">Sistem ve arka plan uygulamalarından gelen bildirimleri dahil et</string>
 
     <!-- Unified Rules -->
     <string name="rules_home_desc">Bildirim kurallarınızı yönetin</string>

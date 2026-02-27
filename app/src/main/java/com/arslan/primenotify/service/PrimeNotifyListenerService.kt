@@ -13,6 +13,7 @@ import com.arslan.primenotify.R
 import com.arslan.primenotify.data.FlashPattern
 import com.arslan.primenotify.data.IgnoreManager
 import com.arslan.primenotify.data.LoggingManager
+import com.arslan.primenotify.data.LoggingPreferences
 import com.arslan.primenotify.data.MatchedRuleInfo
 import com.arslan.primenotify.data.RuleType
 import com.arslan.primenotify.data.RulesManager
@@ -25,6 +26,7 @@ class PrimeNotifyListenerService : NotificationListenerService() {
     private lateinit var screenWakeManager: ScreenWakeManager
     private lateinit var aodManager: AodManager
     private lateinit var loggingManager: LoggingManager
+    private lateinit var loggingPreferences: LoggingPreferences
 
     override fun onCreate() {
         super.onCreate()
@@ -34,6 +36,7 @@ class PrimeNotifyListenerService : NotificationListenerService() {
         screenWakeManager = ScreenWakeManager(this)
         aodManager = AodManager(this)
         loggingManager = LoggingManager(this)
+        loggingPreferences = LoggingPreferences(this)
         startPersistentNotification()
     }
 
@@ -141,13 +144,19 @@ class PrimeNotifyListenerService : NotificationListenerService() {
             }
         }
 
-        loggingManager.logNotification(
-            packageName = packageName,
-            appName = appName,
-            title = title,
-            body = bodyRaw,
-            matchedRules = allLoggedRules,
-        )
+        // Auto-purge old entries
+        loggingManager.purgeOlderThan(loggingPreferences.autoDeleteDays)
+
+        // Only log if rule matched OR user wants all notifications
+        if (allLoggedRules.isNotEmpty() || !loggingPreferences.onlyRuleMatched) {
+            loggingManager.logNotification(
+                packageName = packageName,
+                appName = appName,
+                title = title,
+                body = bodyRaw,
+                matchedRules = allLoggedRules,
+            )
+        }
 
         super.onNotificationPosted(sbn)
     }

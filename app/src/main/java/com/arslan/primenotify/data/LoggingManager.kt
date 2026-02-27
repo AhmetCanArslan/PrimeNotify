@@ -83,6 +83,19 @@ class LoggingManager(context: Context) {
         persist()
     }
 
+    /**
+     * Removes entries older than [days] days.
+     * No-op if [days] <= 0.
+     */
+    @Synchronized
+    fun purgeOlderThan(days: Int) {
+        if (days <= 0) return
+        val cutoff = System.currentTimeMillis() - days * 86_400_000L
+        val before = entries.size
+        entries.removeAll { it.timestamp < cutoff }
+        if (entries.size != before) persist()
+    }
+
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------
