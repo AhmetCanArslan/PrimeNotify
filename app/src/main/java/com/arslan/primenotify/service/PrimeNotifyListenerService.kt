@@ -27,6 +27,7 @@ class PrimeNotifyListenerService : NotificationListenerService() {
     private lateinit var aodManager: AodManager
     private lateinit var loggingManager: LoggingManager
     private lateinit var loggingPreferences: LoggingPreferences
+    private var lastPurgeTime = 0L
 
     override fun onCreate() {
         super.onCreate()
@@ -144,8 +145,14 @@ class PrimeNotifyListenerService : NotificationListenerService() {
             }
         }
 
-        // Auto-purge old entries
-        loggingManager.purgeOlderThan(loggingPreferences.autoDeleteDays)
+        // Auto-purge old entries (at most once per 24 h)
+        val now = System.currentTimeMillis()
+        if (loggingPreferences.autoDeleteDays > 0 &&
+            now - lastPurgeTime > 24 * 60 * 60 * 1000L
+        ) {
+            loggingManager.purgeOlderThan(loggingPreferences.autoDeleteDays)
+            lastPurgeTime = now
+        }
 
         // Only log if rule matched OR user wants all notifications
         if (allLoggedRules.isNotEmpty() || !loggingPreferences.onlyRuleMatched) {

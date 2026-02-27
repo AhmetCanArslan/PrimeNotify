@@ -47,6 +47,9 @@ class LoggingViewModel(application: Application) : AndroidViewModel(application)
     private val _iconCache = MutableStateFlow<Map<String, ImageBitmap?>>(emptyMap())
     val iconCache: StateFlow<Map<String, ImageBitmap?>> = _iconCache.asStateFlow()
 
+    /** Dedicated trigger to force re-filtering without self-assigning _rawLogs. */
+    private val _filterTrigger = MutableStateFlow(0)
+
     // Preference-change triggers
     private val _onlyRuleMatched = MutableStateFlow(loggingPreferences.onlyRuleMatched)
     val onlyRuleMatched: StateFlow<Boolean> = _onlyRuleMatched.asStateFlow()
@@ -80,8 +83,14 @@ class LoggingViewModel(application: Application) : AndroidViewModel(application)
 
         // Re-filter whenever search, prefs, or rawLogs change
         viewModelScope.launch {
-            combine(_rawLogs, _searchQuery, _onlyRuleMatched, _showSystemApps) { raw, query, ruleOnly, sysApps ->
-                filterLogs(raw, query, ruleOnly, sysApps)
+            combine(_rawLogs, _searchQuery, _onlyRuleMatched, _showSystemApps, _filterTrigger) { args ->
+                @Suppress("UNCHECKED_CAST")
+                filterLogs(
+                    args[0] as List<LogEntry>,
+                    args[1] as String,
+                    args[2] as Boolean,
+                    args[3] as Boolean,
+                )
             }.collectLatest { filtered ->
                 _logs.value = filtered
             }
@@ -174,7 +183,7 @@ class LoggingViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private fun applyFilters() {
-        _rawLogs.value = _rawLogs.value // trigger re-combine
+        _filterTrigger.value++
     }
 
     private fun filterLogs(
