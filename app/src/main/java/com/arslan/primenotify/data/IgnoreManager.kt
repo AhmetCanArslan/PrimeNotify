@@ -41,6 +41,15 @@ class IgnoreManager(context: Context) {
         save(current)
     }
 
+    fun updateRule(rule: IgnoreRule) {
+        val current = getRules().toMutableList()
+        val index = current.indexOfFirst { it.id == rule.id }
+        if (index != -1) {
+            current[index] = rule
+            save(current)
+        }
+    }
+
     private fun save(rules: List<IgnoreRule>) {
         prefs.edit().putString(KEY, gson.toJson(rules)).apply()
     }

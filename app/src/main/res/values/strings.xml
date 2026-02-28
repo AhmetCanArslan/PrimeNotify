@@ -228,6 +228,17 @@ Ignore a notification from the logs to suppress it in the future.</string>
     <string name="ignored_restore_desc_title_and_body">Notifications with title "%1$s" and body "%2$s" will no longer be ignored.</string>
     <string name="ignored_restore_desc_pattern">Notifications matching pattern "%1$s" will no longer be ignored.</string>
     <string name="ignored_restore_confirm">Stop Ignoring</string>
+    <string name="ignored_edit_cd">Edit mute rule</string>
+    <string name="ignored_edit_dialog_title">Edit Mute Rule</string>
+    <string name="ignored_edit_app_scope">App scope: %1$s</string>
+    <string name="ignored_edit_app_scope_hint">This rule applies only to notifications from this app.</string>
+    <string name="ignored_edit_app_only">This rule mutes all notifications from %1$s. There are no patterns to edit.</string>
+    <string name="ignored_edit_match_title">Title pattern</string>
+    <string name="ignored_edit_match_body">Body pattern</string>
+    <string name="ignored_edit_regex">Regex</string>
+    <string name="ignored_edit_save">Save</string>
+    <string name="ignored_edit_error_empty">Pattern cannot be empty.</string>
+    <string name="ignored_edit_error_invalid_regex">Invalid regex: %1$s</string>
     <string name="logs_clear_confirm_title">Clear all logs?</string>
     <string name="logs_clear_confirm_body">This will permanently delete all %1$d log entries.</string>
     <string name="logs_delete_confirm_title">Delete notification?</string>

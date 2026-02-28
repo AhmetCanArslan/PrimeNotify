@@ -2,6 +2,7 @@ package com.arslan.primenotify.ui.ignored
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,12 +16,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -62,6 +68,7 @@ fun IgnoredNotificationsScreen(
     val rules by viewModel.rules.collectAsState()
     val iconCache by viewModel.iconCache.collectAsState()
     var confirmRemoveRule by remember { mutableStateOf<IgnoreRule?>(null) }
+    var editingRule by remember { mutableStateOf<IgnoreRule?>(null) }
 
     Scaffold(
         topBar = {
@@ -108,11 +115,23 @@ fun IgnoredNotificationsScreen(
                     IgnoredRuleItem(
                         rule = rule,
                         icon = iconCache[rule.packageName],
+                        onEditClick = { editingRule = rule },
                         onRestoreClick = { confirmRemoveRule = rule }
                     )
                 }
             }
         }
+    }
+
+    editingRule?.let { rule ->
+        EditIgnoreRuleDialog(
+            rule = rule,
+            onDismiss = { editingRule = null },
+            onSave = { updatedRule ->
+                viewModel.updateRule(updatedRule)
+                editingRule = null
+            }
+        )
     }
 
     confirmRemoveRule?.let { rule ->
@@ -161,6 +180,7 @@ fun IgnoredNotificationsScreen(
 private fun IgnoredRuleItem(
     rule: IgnoreRule,
     icon: ImageBitmap?,
+    onEditClick: () -> Unit,
     onRestoreClick: () -> Unit
 ) {
     val appDisplayName = rule.appName?.ifBlank { null } ?: rule.packageName
@@ -201,6 +221,7 @@ private fun IgnoredRuleItem(
     val hasContent = titleMatch != null || bodyMatch != null
 
     Card(
+        onClick = onEditClick,
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
@@ -281,11 +302,26 @@ private fun IgnoredRuleItem(
                     )
                 }
 
+                // Edit button
+                IconButton(
+                    onClick = onEditClick,
+                    modifier = Modifier
+                        .padding(start = 2.dp)
+                        .size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = stringResource(R.string.ignored_edit_cd),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+
                 // Restore button
                 IconButton(
                     onClick = onRestoreClick,
                     modifier = Modifier
-                        .padding(start = 4.dp)
+                        .padding(start = 2.dp)
                         .size(32.dp)
                 ) {
                     Icon(
@@ -322,6 +358,208 @@ private fun IgnoredRuleItem(
             }
         }
     }
+}
+
+@Composable
+private fun EditIgnoreRuleDialog(
+    rule: IgnoreRule,
+    onDismiss: () -> Unit,
+    onSave: (IgnoreRule) -> Unit
+) {
+    val appDisplayName = rule.appName?.ifBlank { null } ?: rule.packageName
+    val isAppOnly = rule.type == IgnoreType.APP
+
+    var matchValueText by remember { mutableStateOf(rule.matchValue.orEmpty()) }
+    var matchValueIsRegex by remember { mutableStateOf(rule.isRegex) }
+    var matchValue2Text by remember { mutableStateOf(rule.matchValue2.orEmpty()) }
+    var matchValue2IsRegex by remember { mutableStateOf(rule.isRegex2) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(R.string.ignored_edit_dialog_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                // App scope info row
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+                        Text(
+                            text = stringResource(R.string.ignored_edit_app_scope, appDisplayName),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Text(
+                            text = stringResource(R.string.ignored_edit_app_scope_hint),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f)
+                        )
+                    }
+                }
+
+                if (isAppOnly) {
+                    Text(
+                        text = stringResource(R.string.ignored_edit_app_only, appDisplayName),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    // Title pattern field (for TITLE and TITLE_AND_BODY)
+                    if (rule.type == IgnoreType.TITLE || rule.type == IgnoreType.TITLE_AND_BODY) {
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            OutlinedTextField(
+                                value = matchValueText,
+                                onValueChange = {
+                                    matchValueText = it
+                                    errorMessage = null
+                                },
+                                label = { Text(stringResource(R.string.ignored_edit_match_title)) },
+                                modifier = Modifier.fillMaxWidth(),
+                                maxLines = 2,
+                                singleLine = false,
+                                textStyle = MaterialTheme.typography.bodySmall
+                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.ignored_edit_regex),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Switch(
+                                    checked = matchValueIsRegex,
+                                    onCheckedChange = {
+                                        matchValueIsRegex = it
+                                        errorMessage = null
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    // Body pattern field (for BODY and TITLE_AND_BODY)
+                    if (rule.type == IgnoreType.BODY || rule.type == IgnoreType.TITLE_AND_BODY) {
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            OutlinedTextField(
+                                value = if (rule.type == IgnoreType.BODY) matchValueText else matchValue2Text,
+                                onValueChange = { v ->
+                                    if (rule.type == IgnoreType.BODY) matchValueText = v
+                                    else matchValue2Text = v
+                                    errorMessage = null
+                                },
+                                label = { Text(stringResource(R.string.ignored_edit_match_body)) },
+                                modifier = Modifier.fillMaxWidth(),
+                                maxLines = 3,
+                                singleLine = false,
+                                textStyle = MaterialTheme.typography.bodySmall
+                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.ignored_edit_regex),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Switch(
+                                    checked = if (rule.type == IgnoreType.BODY) matchValueIsRegex else matchValue2IsRegex,
+                                    onCheckedChange = { v ->
+                                        if (rule.type == IgnoreType.BODY) matchValueIsRegex = v
+                                        else matchValue2IsRegex = v
+                                        errorMessage = null
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    errorMessage?.let { msg ->
+                        Text(
+                            text = msg,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            if (!isAppOnly) {
+                Button(onClick = {
+                    // Validate
+                    val titleValue = matchValueText.trim()
+                    val bodyValue = if (rule.type == IgnoreType.TITLE_AND_BODY) matchValue2Text.trim() else ""
+                    if ((rule.type == IgnoreType.TITLE || rule.type == IgnoreType.TITLE_AND_BODY) && titleValue.isBlank()) {
+                        errorMessage = "Pattern cannot be empty."
+                        return@Button
+                    }
+                    if ((rule.type == IgnoreType.BODY) && titleValue.isBlank()) {
+                        errorMessage = "Pattern cannot be empty."
+                        return@Button
+                    }
+                    if ((rule.type == IgnoreType.TITLE_AND_BODY) && bodyValue.isBlank()) {
+                        errorMessage = "Pattern cannot be empty."
+                        return@Button
+                    }
+                    if (matchValueIsRegex && titleValue.isNotBlank()) {
+                        try { Regex(titleValue) } catch (e: Exception) {
+                            errorMessage = "Invalid regex: ${e.message}"
+                            return@Button
+                        }
+                    }
+                    if (matchValue2IsRegex && bodyValue.isNotBlank()) {
+                        try { Regex(bodyValue) } catch (e: Exception) {
+                            errorMessage = "Invalid regex: ${e.message}"
+                            return@Button
+                        }
+                    }
+                    val updatedRule = when (rule.type) {
+                        IgnoreType.TITLE -> rule.copy(
+                            matchValue = titleValue,
+                            isRegex = matchValueIsRegex
+                        )
+                        IgnoreType.BODY -> rule.copy(
+                            matchValue = titleValue,
+                            isRegex = matchValueIsRegex
+                        )
+                        IgnoreType.TITLE_AND_BODY -> rule.copy(
+                            matchValue = titleValue,
+                            isRegex = matchValueIsRegex,
+                            matchValue2 = bodyValue,
+                            isRegex2 = matchValue2IsRegex
+                        )
+                        else -> rule
+                    }
+                    onSave(updatedRule)
+                }) {
+                    Text(stringResource(R.string.ignored_edit_save))
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
 }
 
 @Composable

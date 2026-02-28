@@ -39,6 +39,16 @@ class IgnoredNotificationsViewModel(application: Application) : AndroidViewModel
         }
     }
 
+    fun updateRule(rule: IgnoreRule) {
+        viewModelScope.launch(Dispatchers.IO) {
+            ignoreManager.updateRule(rule)
+            val updated = ignoreManager.getRules()
+            withContext(Dispatchers.Main) {
+                _rules.value = updated
+            }
+        }
+    }
+
     private fun refresh() {
         viewModelScope.launch(Dispatchers.IO) {
             val result = ignoreManager.getRules()

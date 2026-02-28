@@ -220,6 +220,17 @@ Gelecekte bastırmak için günlüklerden bir bildirimi yoksayın.</string>
     <string name="ignored_restore_desc_body">"%1$s" içerikli bildirimler artık yoksayılmayacak.</string>
     <string name="ignored_restore_desc_pattern">"%1$s" kalıbıyla eşleşen bildirimler artık yoksayılmayacak.</string>
     <string name="ignored_restore_confirm">Yoksaymayı Durdur</string>
+    <string name="ignored_edit_cd">Sessizleştirme kuralını düzenle</string>
+    <string name="ignored_edit_dialog_title">Sessizleştirme Kuralını Düzenle</string>
+    <string name="ignored_edit_app_scope">Uygulama kapsamı: %1$s</string>
+    <string name="ignored_edit_app_scope_hint">Bu kural yalnızca bu uygulamadan gelen bildirimlere uygulanır.</string>
+    <string name="ignored_edit_app_only">Bu kural %1$s uygulamasından gelen tüm bildirimleri sessize alır. Düzenlenecek kalıp bulunmuyor.</string>
+    <string name="ignored_edit_match_title">Başlık kalıbı</string>
+    <string name="ignored_edit_match_body">İçerik kalıbı</string>
+    <string name="ignored_edit_regex">Regex</string>
+    <string name="ignored_edit_save">Kaydet</string>
+    <string name="ignored_edit_error_empty">Kalıp boş olamaz.</string>
+    <string name="ignored_edit_error_invalid_regex">Geçersiz regex: %1$s</string>
     <string name="logs_clear_confirm_title">Tüm günlükler temizlensin mi?</string>
     <string name="logs_clear_confirm_body">Bu işlem %1$d günlük girişini kalıcı olarak siler.</string>
     <string name="logs_delete_confirm_title">Bildirim silinsin mi?</string>
