@@ -291,4 +291,7 @@ Ignore a notification from the logs to suppress it in the future.</string>
     <string name="rules_home_desc">Manage your notification rules</string>
     <string name="rules_count">%1$d rules</string>
     <string name="actions_title">Actions</string>
+    <!-- Add/Edit Rule – Ignore conflict warning -->
+    <string name="rule_conflict_warning_title">Conflict with ignored notifications</string>
+    <string name="rule_conflict_warning_body">The following matches are blocked by your ignore list. This rule may never trigger:</string>
 </resources>

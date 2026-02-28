@@ -34,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.filled.Warning
 import com.arslan.primenotify.R
 import com.arslan.primenotify.data.*
 
@@ -47,6 +48,8 @@ fun AddEditRuleScreen(
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val rulesManager = remember { RulesManager(context) }
+    val ignoreManager = remember { IgnoreManager(context) }
+    val ignoreRules = remember { ignoreManager.getRules() }
     val hasProximitySensor = remember { rulesManager.hasProximitySensor() }
 
     // Draft key – "new" for a new rule, actual ruleId when editing
@@ -156,6 +159,46 @@ fun AddEditRuleScreen(
     val aodDurationOptions = listOf(-1, -2, 5, 10, 15, 30, 60, 120, 300)
 
     val atLeastOneAction = flashEnabled || wakeUpEnabled || aodEnabled
+
+    // Detect conflicts with existing ignore rules
+    val ignoreConflicts by remember(selectedApps, titleKeywords, bodyKeywords) {
+        derivedStateOf {
+            val conflicts = mutableListOf<String>()
+            for (app in selectedApps) {
+                val pkg = app.packageName
+                val appName = app.name
+                val appRules = ignoreRules.filter { it.packageName == pkg }
+                if (appRules.isEmpty()) continue
+                // Entire app is muted
+                if (appRules.any { it.type == IgnoreType.APP }) {
+                    conflicts.add("🔕 All \"$appName\" notifications are muted")
+                    continue
+                }
+                // Title keyword clashes
+                for (kw in titleKeywords) {
+                    val hit = appRules.any { rule ->
+                        (rule.type == IgnoreType.TITLE || rule.type == IgnoreType.TITLE_AND_BODY) &&
+                            !rule.matchValue.isNullOrBlank() &&
+                            ignorePhraseMatches(kw, rule.matchValue, rule.isRegex)
+                    }
+                    if (hit) conflicts.add("🔕 Title keyword \"$kw\" in \"$appName\" is muted")
+                }
+                // Body keyword clashes
+                for (kw in bodyKeywords) {
+                    val hit = appRules.any { rule ->
+                        (rule.type == IgnoreType.BODY &&
+                            !rule.matchValue.isNullOrBlank() &&
+                            ignorePhraseMatches(kw, rule.matchValue, rule.isRegex)) ||
+                        (rule.type == IgnoreType.TITLE_AND_BODY &&
+                            !rule.matchValue2.isNullOrBlank() &&
+                            ignorePhraseMatches(kw, rule.matchValue2, rule.isRegex2))
+                    }
+                    if (hit) conflicts.add("🔕 Body keyword \"$kw\" in \"$appName\" is muted")
+                }
+            }
+            conflicts
+        }
+    }
 
     // Keep a snapshot of the current form state so onDispose can persist it.
     // SideEffect runs after every successful recomposition, always capturing latest values.
@@ -448,6 +491,53 @@ fun AddEditRuleScreen(
                             },
                             singleLine = true
                         )
+                    }
+                }
+
+                // ── Ignore conflict warning ───────────────────────────────
+                if (ignoreConflicts.isNotEmpty()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Warning,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Text(
+                                    text = stringResource(R.string.rule_conflict_warning_title),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            }
+                            Text(
+                                text = stringResource(R.string.rule_conflict_warning_body),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            ignoreConflicts.forEach { msg ->
+                                Text(
+                                    text = msg,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -914,5 +1004,22 @@ fun AddEditRuleScreen(
                 }
             }
         )
+    }
+}
+
+/**
+ * Returns true if [keyword] (as used in notification rule matching)
+ * would be caught by an ignore rule whose pattern is [ignorePattern].
+ * - Regex mode: pattern must match within keyword (containsMatchIn).
+ * - Plain mode: keyword must equal pattern exactly (case-insensitive),
+ *   matching how IgnoreManager.matchText works.
+ */
+private fun ignorePhraseMatches(keyword: String, ignorePattern: String, isRegex: Boolean): Boolean {
+    return if (isRegex) {
+        try {
+            Regex(ignorePattern, RegexOption.IGNORE_CASE).containsMatchIn(keyword)
+        } catch (_: Exception) { false }
+    } else {
+        keyword.equals(ignorePattern, ignoreCase = true)
     }
 }

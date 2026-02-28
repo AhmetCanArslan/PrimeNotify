@@ -282,4 +282,7 @@ Gelecekte bastırmak için günlüklerden bir bildirimi yoksayın.</string>
     <string name="rules_home_desc">Bildirim kurallarınızı yönetin</string>
     <string name="rules_count">%1$d kural</string>
     <string name="actions_title">Eylemler</string>
+    <!-- Add/Edit Rule – Ignore conflict warning -->
+    <string name="rule_conflict_warning_title">Yoksay listesiyle çakışma</string>
+    <string name="rule_conflict_warning_body">Aşağıdaki eşleşmeler yoksay listeniz tarafından engelleniyor. Bu kural hiç tetiklenmeyebilir:</string>
 </resources>
