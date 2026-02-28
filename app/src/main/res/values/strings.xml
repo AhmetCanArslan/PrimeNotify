@@ -96,6 +96,8 @@
     <string name="no_apps_chosen">No Apps Chosen</string>
     <string name="keywords_any">Keywords: Any</string>
     <string name="keywords_format">Keywords: %1$s</string>
+    <string name="title_keywords_format">Title: %1$s</string>
+    <string name="body_keywords_format">Body: %1$s</string>
     <string name="pattern_unknown">Pattern: Unknown</string>
     <string name="pattern_format">Pattern: %1$s</string>
     <string name="unknown">Unknown</string>

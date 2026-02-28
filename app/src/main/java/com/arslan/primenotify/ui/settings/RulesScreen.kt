@@ -156,11 +156,34 @@ private fun NotificationRuleCard(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
+                    // Legacy combined keywords
                     if (rule.keywords.isNotEmpty()) {
                         Text(
                             text = stringResource(
                                 R.string.keywords_format,
                                 rule.keywords.joinToString(", ")
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    // Title keywords
+                    if (rule.titleKeywords.isNotEmpty()) {
+                        Text(
+                            text = stringResource(
+                                R.string.title_keywords_format,
+                                rule.titleKeywords.joinToString(", ")
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    // Body keywords
+                    if (rule.bodyKeywords.isNotEmpty()) {
+                        Text(
+                            text = stringResource(
+                                R.string.body_keywords_format,
+                                rule.bodyKeywords.joinToString(", ")
                             ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
