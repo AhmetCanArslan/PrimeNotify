@@ -178,6 +178,14 @@ fun AddEditRuleScreen(
                     Button(
                         onClick = {
                             if (selectedApps.isNotEmpty() && atLeastOneAction) {
+                                // Flush any partially-typed keywords that weren't committed via Enter/+
+                                val pendingTitle = currentTitleKeyword.trim()
+                                val finalTitleKeywords = if (pendingTitle.isNotBlank() && !titleKeywords.contains(pendingTitle))
+                                    titleKeywords + pendingTitle else titleKeywords
+                                val pendingBody = currentBodyKeyword.trim()
+                                val finalBodyKeywords = if (pendingBody.isNotBlank() && !bodyKeywords.contains(pendingBody))
+                                    bodyKeywords + pendingBody else bodyKeywords
+
                                 val actions = buildList {
                                     if (flashEnabled)
                                         add(RuleAction.flash(flashPattern, flashCustomPatternId))
@@ -193,8 +201,8 @@ fun AddEditRuleScreen(
                                     packageNames = selectedApps.map { it.packageName },
                                     appNames = selectedApps.map { it.name },
                                     keywords = emptyList(),
-                                    titleKeywords = titleKeywords,
-                                    bodyKeywords = bodyKeywords,
+                                    titleKeywords = finalTitleKeywords,
+                                    bodyKeywords = finalBodyKeywords,
                                     actions = actions,
                                     applyOnVibration = applyOnVibration,
                                     applyOnSilent = applyOnSilent,
@@ -204,8 +212,8 @@ fun AddEditRuleScreen(
                                     packageNames = selectedApps.map { it.packageName },
                                     appNames = selectedApps.map { it.name },
                                     keywords = emptyList(),
-                                    titleKeywords = titleKeywords,
-                                    bodyKeywords = bodyKeywords,
+                                    titleKeywords = finalTitleKeywords,
+                                    bodyKeywords = finalBodyKeywords,
                                     actions = actions,
                                     applyOnVibration = applyOnVibration,
                                     applyOnSilent = applyOnSilent,
