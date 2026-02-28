@@ -3,9 +3,13 @@ package com.arslan.primenotify.data
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import java.io.File
+import java.io.FileOutputStream
+import java.util.concurrent.ConcurrentHashMap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -51,45 +55,134 @@ object AppListManager {
     private val _installedApps = MutableStateFlow<List<AppItem>>(emptyList())
     val installedApps: StateFlow<List<AppItem>> = _installedApps.asStateFlow()
 
-    /** Fast O(1) icon lookup by package name. Rebuilt whenever _installedApps changes. */
+    /**
+     * Thread-safe icon lookup by package name.
+     * Populated by [initialize] and lazily by [getIconForPackage] for unknown packages.
+     */
+    private val iconIndex = ConcurrentHashMap<String, ImageBitmap>()
+
+    /** Retained so [getIconForPackage] can do disk/PM fallback for any package. */
     @Volatile
-    private var iconIndex: HashMap<String, ImageBitmap?> = hashMapOf()
+    private var appContext: Context? = null
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     fun initialize(context: Context) {
         if (_installedApps.value.isNotEmpty()) return
-        val appContext = context.applicationContext
+        val ctx = context.applicationContext
+        appContext = ctx
         applicationScope.launch {
-            val pm = appContext.packageManager
+            val pm = ctx.packageManager
+            val iconDir = File(ctx.cacheDir, ICON_CACHE_DIR).also { it.mkdirs() }
+
+            // Batch-fetch app update times in a single PM call for staleness checks
+            val updateTimes: Map<String, Long> = try {
+                pm.getInstalledPackages(0).associate { it.packageName to it.lastUpdateTime }
+            } catch (_: Exception) { emptyMap() }
+
             val packages = pm.getInstalledApplications(PackageManager.GET_META_DATA)
-            val apps = packages
                 .filter { pm.getLaunchIntentForPackage(it.packageName) != null }
-                .map { appInfo ->
-                    val icon = try {
-                        drawableToImageBitmap(pm.getApplicationIcon(appInfo.packageName))
-                    } catch (_: Exception) { null }
-                    AppItem(
-                        name = pm.getApplicationLabel(appInfo).toString(),
-                        packageName = appInfo.packageName,
-                        icon = icon
-                    )
-                }
-                .sortedBy { it.name.lowercase() }
-            // Build fast lookup index before publishing
-            val index = HashMap<String, ImageBitmap?>(apps.size)
-            for (app in apps) index[app.packageName] = app.icon
-            iconIndex = index
-            _installedApps.value = apps
+
+            // ── Phase 1: load icons from disk cache (fast BitmapFactory reads) ──
+            val phase1Apps = packages.map { appInfo ->
+                val icon = loadIconFromDisk(iconDir, appInfo.packageName)
+                if (icon != null) iconIndex[appInfo.packageName] = icon
+                AppItem(
+                    name = pm.getApplicationLabel(appInfo).toString(),
+                    packageName = appInfo.packageName,
+                    icon = icon
+                )
+            }.sortedBy { it.name.lowercase() }
+
+            // Emit immediately so the UI shows whatever is cached on disk right away
+            _installedApps.value = phase1Apps
+
+            // ── Phase 2: decode from PM for missing or stale cache entries ──
+            val mutableApps = ArrayList(phase1Apps)
+            var changed = false
+
+            for (i in mutableApps.indices) {
+                val app = mutableApps[i]
+                val iconFile = File(iconDir, iconFileName(app.packageName))
+                val updateTime = updateTimes[app.packageName] ?: 0L
+                // Skip if cached file is newer than the last app update
+                if (iconFile.exists() && iconFile.lastModified() >= updateTime && app.icon != null) continue
+
+                val bitmap = try {
+                    drawableToBitmap(pm.getApplicationIcon(app.packageName))
+                } catch (_: Exception) { null } ?: continue
+
+                saveIconToDisk(bitmap, iconFile)
+                val img = bitmap.asImageBitmap()
+                iconIndex[app.packageName] = img
+                mutableApps[i] = app.copy(icon = img)
+                changed = true
+            }
+
+            if (changed) _installedApps.value = ArrayList(mutableApps)
         }
     }
 
-    fun getIconForPackage(packageName: String): ImageBitmap? =
-        iconIndex[packageName]
+    /**
+     * Returns the icon for [packageName].
+     *
+     * Lookup order: in-memory index → disk cache → PackageManager (saves to disk).
+     *
+     * The disk/PM fallback path is safe to call from a background (IO) thread only.
+     */
+    fun getIconForPackage(packageName: String): ImageBitmap? {
+        iconIndex[packageName]?.let { return it }
 
+        val ctx = appContext ?: return null
+        val iconDir = File(ctx.cacheDir, ICON_CACHE_DIR)
+        val iconFile = File(iconDir, iconFileName(packageName))
+
+        // Try disk cache (covers system/non-launchable apps not in installedApps)
+        if (iconFile.exists()) {
+            try {
+                val bmp = BitmapFactory.decodeFile(iconFile.absolutePath)
+                if (bmp != null) {
+                    val img = bmp.asImageBitmap()
+                    iconIndex[packageName] = img
+                    return img
+                }
+            } catch (_: Exception) {}
+        }
+
+        // Last resort: decode from PackageManager and persist to disk
+        return try {
+            val bitmap = drawableToBitmap(ctx.packageManager.getApplicationIcon(packageName))
+            iconDir.mkdirs()
+            saveIconToDisk(bitmap, iconFile)
+            val img = bitmap.asImageBitmap()
+            iconIndex[packageName] = img
+            img
+        } catch (_: Exception) { null }
+    }
+
+    // ── Disk helpers ────────────────────────────────────────────────────────
+
+    private fun loadIconFromDisk(iconDir: File, packageName: String): ImageBitmap? = try {
+        val file = File(iconDir, iconFileName(packageName))
+        if (!file.exists()) null
+        else BitmapFactory.decodeFile(file.absolutePath)?.asImageBitmap()
+    } catch (_: Exception) { null }
+
+    private fun saveIconToDisk(bitmap: Bitmap, file: File) {
+        try {
+            file.parentFile?.mkdirs()
+            FileOutputStream(file).use { out ->
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            }
+        } catch (_: Exception) {}
+    }
+
+    private fun iconFileName(packageName: String) = "${packageName.replace('/', '_')}.png"
+
+    private const val ICON_CACHE_DIR = "app_icons"
     private const val ICON_SIZE_PX = 48
 
-    private fun drawableToImageBitmap(drawable: Drawable): ImageBitmap {
+    private fun drawableToBitmap(drawable: Drawable): Bitmap {
         val rawBitmap = if (drawable is BitmapDrawable && drawable.bitmap != null) {
             drawable.bitmap
         } else {
@@ -101,12 +194,11 @@ object AppListManager {
             drawable.draw(canvas)
             bmp
         }
-        val scaled = if (rawBitmap.width > ICON_SIZE_PX || rawBitmap.height > ICON_SIZE_PX) {
+        return if (rawBitmap.width > ICON_SIZE_PX || rawBitmap.height > ICON_SIZE_PX) {
             Bitmap.createScaledBitmap(rawBitmap, ICON_SIZE_PX, ICON_SIZE_PX, true)
         } else {
             rawBitmap
         }
-        return scaled.asImageBitmap()
     }
 }
 
