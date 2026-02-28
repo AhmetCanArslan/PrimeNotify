@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import java.util.UUID
 
-enum class IgnoreType { APP, TITLE, BODY }
+enum class IgnoreType { APP, TITLE, BODY, TITLE_AND_BODY }
 
 @Keep
 @Parcelize
@@ -27,8 +27,28 @@ data class IgnoreRule(
 
     /**
      * For [IgnoreType.APP] this is unused (match is by packageName alone).
-     * For [IgnoreType.TITLE] / [IgnoreType.BODY] this is the substring to match.
+     * For [IgnoreType.TITLE] / [IgnoreType.BODY] this is the substring to match
+     * (or a regex pattern when [isRegex] is true).
      */
     @SerializedName("matchValue")
-    val matchValue: String? = null
+    val matchValue: String? = null,
+
+    /**
+     * When true, [matchValue] is treated as a regex pattern
+     * instead of a plain substring.
+     */
+    @SerializedName("isRegex")
+    val isRegex: Boolean = false,
+
+    /**
+     * For [IgnoreType.TITLE_AND_BODY] only: the body substring/pattern to match
+     * alongside [matchValue] (which is the title). Both must match for the rule
+     * to fire.
+     */
+    @SerializedName("matchValue2")
+    val matchValue2: String? = null,
+
+    /** When true, [matchValue2] is treated as a regex pattern. */
+    @SerializedName("isRegex2")
+    val isRegex2: Boolean = false
 ) : Parcelable

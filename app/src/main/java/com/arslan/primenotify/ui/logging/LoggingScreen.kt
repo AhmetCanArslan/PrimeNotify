@@ -5,6 +5,8 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -359,82 +361,18 @@ fun LoggingScreen(
 
     // Ignore dialog
     ignoreTarget?.let { entry ->
-        AlertDialog(
-            onDismissRequest = { ignoreTarget = null },
-            title = {
-                Text(
-                    text = stringResource(R.string.logs_ignore_dialog_title),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+        IgnoreDialog(
+            entry = entry,
+            onDismiss = { ignoreTarget = null },
+            onSave = { titlePattern, titleIsRegex, bodyPattern, bodyIsRegex ->
+                viewModel.ignoreFromDialog(
+                    entry = entry,
+                    titlePattern = titlePattern,
+                    titleIsRegex = titleIsRegex,
+                    bodyPattern = bodyPattern,
+                    bodyIsRegex = bodyIsRegex
                 )
-            },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(
-                        stringResource(R.string.logs_ignore_dialog_body),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    // By App
-                    Button(
-                        onClick = {
-                            viewModel.ignoreEntry(entry, IgnoreType.APP)
-                            ignoreTarget = null
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(stringResource(R.string.logs_ignore_by_app, entry.appName))
-                    }
-                    // By Header
-                    if (entry.title.isNotBlank()) {
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 2.dp))
-                        Button(
-                            onClick = {
-                                viewModel.ignoreEntry(entry, IgnoreType.TITLE)
-                                ignoreTarget = null
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        ) {
-                            Text(
-                                text = stringResource(R.string.logs_ignore_by_header, entry.title),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                    // By Description
-                    if (entry.body.isNotBlank()) {
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 2.dp))
-                        Button(
-                            onClick = {
-                                viewModel.ignoreEntry(entry, IgnoreType.BODY)
-                                ignoreTarget = null
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-                            )
-                        ) {
-                            Text(
-                                text = stringResource(R.string.logs_ignore_by_description, entry.body),
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                }
-            },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = { ignoreTarget = null }) {
-                    Text(stringResource(R.string.cancel))
-                }
+                ignoreTarget = null
             }
         )
     }
@@ -871,3 +809,262 @@ private fun cachedTimeFormat(context: Context): java.text.DateFormat =
 
 private fun cachedDateFormat(): SimpleDateFormat =
     _cachedDateFormat ?: SimpleDateFormat("MMM d", Locale.getDefault()).also { _cachedDateFormat = it }
+
+/**
+ * Suggests a regex pattern from plain text by replacing runs of digits with `\d+`.
+ */
+private fun suggestRegex(text: String): String =
+    text.replace(Regex("\\d+"), "\\\\d+")
+
+/**
+ * Unified ignore dialog.
+ *
+ * The app is always the scope — shown as a locked label, not a checkbox.
+ * Title and body are optional content filters ON TOP of the app scope.
+ *
+ * - No content filters selected → APP rule (ignore all from this app)
+ * - Title checked                → TITLE rule scoped to this app only
+ * - Body checked                 → BODY  rule scoped to this app only
+ * - Both checked                 → two rules, both scoped to this app only
+ */
+@Composable
+private fun IgnoreDialog(
+    entry: LogEntry,
+    onDismiss: () -> Unit,
+    onSave: (
+        titlePattern: String?,
+        titleIsRegex: Boolean,
+        bodyPattern: String?,
+        bodyIsRegex: Boolean
+    ) -> Unit
+) {
+    val hasTitle = entry.title.isNotBlank()
+    val hasBody = entry.body.isNotBlank()
+
+    var titleText by remember { mutableStateOf(entry.title) }
+    var titleIsRegex by remember { mutableStateOf(false) }
+    var bodyText by remember { mutableStateOf(entry.body) }
+    var bodyIsRegex by remember { mutableStateOf(false) }
+
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(R.string.ignore_dialog_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                // ── Notification preview card ──
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Text(
+                            text = entry.appName,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        if (hasTitle) {
+                            Text(
+                                text = entry.title,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.SemiBold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        if (hasBody) {
+                            Text(
+                                text = entry.body,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
+
+                // ── App scope label (locked, non-interactive) ──
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.NotificationsOff,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Column {
+                            Text(
+                                text = stringResource(R.string.ignore_dialog_scope_label, entry.appName),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Text(
+                                text = stringResource(R.string.ignore_dialog_scope_hint, entry.appName),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f)
+                            )
+                        }
+                    }
+                }
+
+                // ── Content filters section ──
+                Text(
+                    text = stringResource(R.string.ignore_dialog_content_section),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Text(
+                    text = stringResource(R.string.ignore_dialog_content_hint, entry.appName),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                // ── Title filter ──
+                if (hasTitle) {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        OutlinedTextField(
+                            value = titleText,
+                            onValueChange = {
+                                titleText = it
+                                errorMessage = null
+                            },
+                            label = { Text(stringResource(R.string.ignore_dialog_match_title)) },
+                            placeholder = if (titleIsRegex) {
+                                { Text(stringResource(R.string.ignore_dialog_hint_regex)) }
+                            } else null,
+                            modifier = Modifier.fillMaxWidth(),
+                            maxLines = 2,
+                            singleLine = false,
+                            textStyle = MaterialTheme.typography.bodySmall
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = stringResource(R.string.ignore_dialog_regex),
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Switch(
+                                checked = titleIsRegex,
+                                onCheckedChange = { checked ->
+                                    titleIsRegex = checked
+                                    titleText = if (checked) suggestRegex(entry.title) else entry.title
+                                    errorMessage = null
+                                }
+                            )
+                        }
+                    }
+                }
+
+                // ── Body filter ──
+                if (hasBody) {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        OutlinedTextField(
+                            value = bodyText,
+                            onValueChange = {
+                                bodyText = it
+                                errorMessage = null
+                            },
+                            label = { Text(stringResource(R.string.ignore_dialog_match_body)) },
+                            placeholder = if (bodyIsRegex) {
+                                { Text(stringResource(R.string.ignore_dialog_hint_regex)) }
+                            } else null,
+                            modifier = Modifier.fillMaxWidth(),
+                            maxLines = 3,
+                            singleLine = false,
+                            textStyle = MaterialTheme.typography.bodySmall
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = stringResource(R.string.ignore_dialog_regex),
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Switch(
+                                checked = bodyIsRegex,
+                                onCheckedChange = { checked ->
+                                    bodyIsRegex = checked
+                                    bodyText = if (checked) suggestRegex(entry.body) else entry.body
+                                    errorMessage = null
+                                }
+                            )
+                        }
+                    }
+                }
+
+                // ── Error message ──
+                errorMessage?.let { msg ->
+                    Text(
+                        text = msg,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                val useTitleFilter = hasTitle && titleText.isNotBlank()
+                val useBodyFilter = hasBody && bodyText.isNotBlank()
+                if (useTitleFilter && titleIsRegex) {
+                    try { Regex(titleText.trim()) } catch (e: Exception) {
+                        errorMessage = "Invalid title regex: ${e.message}"
+                        return@Button
+                    }
+                }
+                if (useBodyFilter && bodyIsRegex) {
+                    try { Regex(bodyText.trim()) } catch (e: Exception) {
+                        errorMessage = "Invalid body regex: ${e.message}"
+                        return@Button
+                    }
+                }
+                onSave(
+                    if (useTitleFilter) titleText.trim() else null,
+                    titleIsRegex,
+                    if (useBodyFilter) bodyText.trim() else null,
+                    bodyIsRegex
+                )
+            }) {
+                Text(stringResource(R.string.ignore_dialog_save))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
+}

@@ -1,8 +1,10 @@
 package com.arslan.primenotify.ui.ignored
 
 import android.app.Application
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.arslan.primenotify.data.AppListManager
 import com.arslan.primenotify.data.IgnoreManager
 import com.arslan.primenotify.data.IgnoreRule
 import kotlinx.coroutines.Dispatchers
@@ -19,6 +21,9 @@ class IgnoredNotificationsViewModel(application: Application) : AndroidViewModel
     private val _rules = MutableStateFlow<List<IgnoreRule>>(emptyList())
     val rules: StateFlow<List<IgnoreRule>> = _rules.asStateFlow()
 
+    private val _iconCache = MutableStateFlow<Map<String, ImageBitmap?>>(emptyMap())
+    val iconCache: StateFlow<Map<String, ImageBitmap?>> = _iconCache.asStateFlow()
+
     init {
         refresh()
     }
@@ -27,7 +32,10 @@ class IgnoredNotificationsViewModel(application: Application) : AndroidViewModel
         viewModelScope.launch(Dispatchers.IO) {
             ignoreManager.removeRule(id)
             val updated = ignoreManager.getRules()
-            withContext(Dispatchers.Main) { _rules.value = updated }
+            withContext(Dispatchers.Main) {
+                _rules.value = updated
+                rebuildIconCache(updated)
+            }
         }
     }
 
@@ -35,6 +43,16 @@ class IgnoredNotificationsViewModel(application: Application) : AndroidViewModel
         viewModelScope.launch(Dispatchers.IO) {
             val result = ignoreManager.getRules()
             withContext(Dispatchers.Main) { _rules.value = result }
+            rebuildIconCache(result)
         }
+    }
+
+    private suspend fun rebuildIconCache(rules: List<IgnoreRule>) {
+        if (rules.isEmpty()) return
+        val icons = withContext(Dispatchers.IO) {
+            rules.map { it.packageName }.toHashSet()
+                .associateWith { AppListManager.getIconForPackage(it) }
+        }
+        withContext(Dispatchers.Main) { _iconCache.value = icons }
     }
 }

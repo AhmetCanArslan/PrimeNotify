@@ -23,7 +23,12 @@ class IgnoreManager(context: Context) {
     fun addRule(rule: IgnoreRule) {
         val current = getRules().toMutableList()
         // Avoid duplicates
-        val duplicate = current.any { it.type == rule.type && it.packageName == rule.packageName && it.matchValue == rule.matchValue }
+        val duplicate = current.any {
+            it.type == rule.type &&
+                it.packageName == rule.packageName &&
+                it.matchValue == rule.matchValue &&
+                it.matchValue2 == rule.matchValue2
+        }
         if (!duplicate) {
             current.add(rule)
             save(current)
@@ -52,11 +57,35 @@ class IgnoreManager(context: Context) {
                 IgnoreType.TITLE ->
                     rule.packageName == packageName &&
                         !rule.matchValue.isNullOrBlank() &&
-                        title.contains(rule.matchValue, ignoreCase = true)
+                        matchText(title, rule.matchValue, rule.isRegex)
                 IgnoreType.BODY ->
                     rule.packageName == packageName &&
                         !rule.matchValue.isNullOrBlank() &&
-                        body.contains(rule.matchValue, ignoreCase = true)
+                        matchText(body, rule.matchValue, rule.isRegex)
+                IgnoreType.TITLE_AND_BODY ->
+                    rule.packageName == packageName &&
+                        !rule.matchValue.isNullOrBlank() &&
+                        !rule.matchValue2.isNullOrBlank() &&
+                        matchText(title, rule.matchValue, rule.isRegex) &&
+                        matchText(body, rule.matchValue2, rule.isRegex2)
             }
         }
+
+    /**
+     * Matches [text] against [pattern]. When [isRegex] is true the pattern
+     * is compiled as a regular expression; otherwise a simple case-insensitive
+     * substring check is performed.
+     */
+    private fun matchText(text: String, pattern: String, isRegex: Boolean): Boolean {
+        return if (isRegex) {
+            try {
+                Regex(pattern, RegexOption.IGNORE_CASE).containsMatchIn(text)
+            } catch (_: Exception) {
+                // Invalid regex – treat as non-match so it doesn't break everything
+                false
+            }
+        } else {
+            text.contains(pattern, ignoreCase = true)
+        }
+    }
 }

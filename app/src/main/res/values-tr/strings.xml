@@ -184,7 +184,25 @@
     <string name="logs_ignore_by_app">Uygulama: %1$s</string>
     <string name="logs_ignore_by_header">Başlık: "%1$s"</string>
     <string name="logs_ignore_by_description">Açıklama: "%1$s"</string>
+    <string name="logs_ignore_with_pattern">Kalıpla yoksay…</string>
     <string name="cd_ignore_notification">Bildirimi yoksay</string>
+
+    <!-- Unified ignore dialog -->
+    <string name="ignore_dialog_title">Bildirimi yoksay</string>
+    <string name="ignore_dialog_preview_title">Bildirim önizleme</string>
+    <string name="ignore_dialog_scope_label">Kapsam: yalnızca %1$s</string>
+    <string name="ignore_dialog_scope_hint">Aşağıdaki tüm kurallar yalnızca %1$s için geçerlidir, diğer uygulamalar için değil.</string>
+    <string name="ignore_dialog_content_section">İçerik filtreleri (isteĞe bağlı)</string>
+    <string name="ignore_dialog_content_hint">Hiçbiri seçilmezse, %1$s uygulamasından gelen TÜM bildirimler yoksayılacak.</string>
+    <string name="ignore_dialog_match_app">%1$s — tüm bildirimler</string>
+    <string name="ignore_dialog_match_title">Başlık eşleştir</string>
+    <string name="ignore_dialog_match_body">İçerik eşleştir</string>
+    <string name="ignore_dialog_regex">Regex</string>
+    <string name="ignore_dialog_save">Yoksay</string>
+    <string name="ignore_dialog_error_no_criteria">En az bir eşleşme kriteri seçin</string>
+    <string name="ignore_dialog_error_empty_field">Etkinleştirildiğinde kalıp boş olamaz</string>
+    <string name="ignore_dialog_error_invalid_regex">Geçersiz regex: %1$s</string>
+    <string name="ignore_dialog_hint_regex">örn. \\d+ sohbetten \\d+ mesaj</string>
 
     <!-- Ignored Notifications Screen -->
     <string name="nav_ignored_notifications">Yoksayılan Bildirimler</string>
@@ -194,11 +212,13 @@ Gelecekte bastırmak için günlüklerden bir bildirimi yoksayın.</string>
     <string name="ignored_type_app">Uygulama</string>
     <string name="ignored_type_title">Başlık</string>
     <string name="ignored_type_body">İçerik</string>
+    <string name="ignored_type_regex">Regex</string>
     <string name="ignored_restore_cd">Bildirimi geri yükle</string>
     <string name="ignored_restore_confirm_title">Yoksaymayı durdur?</string>
     <string name="ignored_restore_desc_app">%1$s uygulamasından gelen bildirimler artık yoksayılmayacak.</string>
     <string name="ignored_restore_desc_title">"%1$s" başlıklı bildirimler artık yoksayılmayacak.</string>
     <string name="ignored_restore_desc_body">"%1$s" içerikli bildirimler artık yoksayılmayacak.</string>
+    <string name="ignored_restore_desc_pattern">"%1$s" kalıbıyla eşleşen bildirimler artık yoksayılmayacak.</string>
     <string name="ignored_restore_confirm">Yoksaymayı Durdur</string>
     <string name="logs_clear_confirm_title">Tüm günlükler temizlensin mi?</string>
     <string name="logs_clear_confirm_body">Bu işlem %1$d günlük girişini kalıcı olarak siler.</string>
@@ -231,6 +251,19 @@ Gelecekte bastırmak için günlüklerden bir bildirimi yoksayın.</string>
     <string name="logs_only_rule_matched_desc">Yalnızca en az bir kuralla eşleşen bildirimleri göster</string>
     <string name="logs_show_system_apps">Sistem uygulamalarını göster</string>
     <string name="logs_show_system_apps_desc">Sistem ve arka plan uygulamalarından gelen bildirimleri dahil et</string>
+
+    <!-- Pattern ignore dialog -->
+    <string name="ignore_pattern_title">Kalıpla yoksay</string>
+    <string name="ignore_pattern_app">Uygulama: %1$s</string>
+    <string name="ignore_pattern_match_field">Eşleşme alanı</string>
+    <string name="ignore_pattern_field_title">Başlık</string>
+    <string name="ignore_pattern_field_body">İçerik</string>
+    <string name="ignore_pattern_label">Kalıp</string>
+    <string name="ignore_pattern_use_regex">Regex kullan</string>
+    <string name="ignore_pattern_save">Kaydet</string>
+    <string name="ignore_pattern_error_empty">Kalıp boş olamaz</string>
+    <string name="ignore_pattern_error_invalid_regex">Geçersiz regex kalıbı</string>
+    <string name="ignore_pattern_hint">örn. \\d+ sohbetten \\d+ mesaj</string>
 
     <!-- Unified Rules -->
     <string name="rules_home_desc">Bildirim kurallarınızı yönetin</string>

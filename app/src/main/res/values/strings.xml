@@ -184,7 +184,25 @@
     <string name="logs_ignore_by_app">App: %1$s</string>
     <string name="logs_ignore_by_header">Header: "%1$s"</string>
     <string name="logs_ignore_by_description">Description: "%1$s"</string>
+    <string name="logs_ignore_with_pattern">Ignore with pattern…</string>
     <string name="cd_ignore_notification">Ignore notification</string>
+
+    <!-- Unified ignore dialog -->
+    <string name="ignore_dialog_title">Ignore notification</string>
+    <string name="ignore_dialog_preview_title">Notification preview</string>
+    <string name="ignore_dialog_scope_label">Scope: %1$s only</string>
+    <string name="ignore_dialog_scope_hint">All rules below apply to %1$s only, not other apps.</string>
+    <string name="ignore_dialog_content_section">Content filters (optional)</string>
+    <string name="ignore_dialog_content_hint">If none selected, ALL notifications from %1$s will be ignored.</string>
+    <string name="ignore_dialog_match_app">All from %1$s</string>
+    <string name="ignore_dialog_match_title">Match title</string>
+    <string name="ignore_dialog_match_body">Match body</string>
+    <string name="ignore_dialog_regex">Regex</string>
+    <string name="ignore_dialog_save">Ignore</string>
+    <string name="ignore_dialog_error_no_criteria">Select at least one matching criteria</string>
+    <string name="ignore_dialog_error_empty_field">Pattern cannot be empty when enabled</string>
+    <string name="ignore_dialog_error_invalid_regex">Invalid regex: %1$s</string>
+    <string name="ignore_dialog_hint_regex">e.g. \\d+ sohbetten \\d+ mesaj</string>
 
     <!-- Ignored Notifications Screen -->
     <string name="nav_ignored_notifications">Ignored Notifications</string>
@@ -194,11 +212,21 @@ Ignore a notification from the logs to suppress it in the future.</string>
     <string name="ignored_type_app">App</string>
     <string name="ignored_type_title">Title</string>
     <string name="ignored_type_body">Body</string>
+    <string name="ignored_type_title_and_body">Title + Body</string>
+    <string name="ignored_type_regex">Regex</string>
+    <string name="ignored_subtitle_all">Mutes all notifications</string>
+    <string name="ignored_subtitle_title">Mutes by title match</string>
+    <string name="ignored_subtitle_body">Mutes by body match</string>
+    <string name="ignored_subtitle_title_and_body">Mutes by title + body match</string>
+    <string name="ignored_label_title">Title:</string>
+    <string name="ignored_label_body">Body:</string>
     <string name="ignored_restore_cd">Restore notification</string>
     <string name="ignored_restore_confirm_title">Stop ignoring?</string>
     <string name="ignored_restore_desc_app">Notifications from %1$s will no longer be ignored.</string>
     <string name="ignored_restore_desc_title">Notifications with title "%1$s" will no longer be ignored.</string>
     <string name="ignored_restore_desc_body">Notifications with body "%1$s" will no longer be ignored.</string>
+    <string name="ignored_restore_desc_title_and_body">Notifications with title "%1$s" and body "%2$s" will no longer be ignored.</string>
+    <string name="ignored_restore_desc_pattern">Notifications matching pattern "%1$s" will no longer be ignored.</string>
     <string name="ignored_restore_confirm">Stop Ignoring</string>
     <string name="logs_clear_confirm_title">Clear all logs?</string>
     <string name="logs_clear_confirm_body">This will permanently delete all %1$d log entries.</string>
@@ -231,6 +259,19 @@ Ignore a notification from the logs to suppress it in the future.</string>
     <string name="logs_only_rule_matched_desc">Only show notifications that matched at least one rule</string>
     <string name="logs_show_system_apps">Show system apps</string>
     <string name="logs_show_system_apps_desc">Include notifications from system and background apps</string>
+
+    <!-- Pattern ignore dialog -->
+    <string name="ignore_pattern_title">Ignore with pattern</string>
+    <string name="ignore_pattern_app">App: %1$s</string>
+    <string name="ignore_pattern_match_field">Match against</string>
+    <string name="ignore_pattern_field_title">Title</string>
+    <string name="ignore_pattern_field_body">Body</string>
+    <string name="ignore_pattern_label">Pattern</string>
+    <string name="ignore_pattern_use_regex">Use regex</string>
+    <string name="ignore_pattern_save">Save</string>
+    <string name="ignore_pattern_error_empty">Pattern cannot be empty</string>
+    <string name="ignore_pattern_error_invalid_regex">Invalid regex pattern</string>
+    <string name="ignore_pattern_hint">e.g. \\d+ sohbetten \\d+ mesaj</string>
 
     <!-- Unified Rules -->
     <string name="notification_persistent_text">Monitoring notifications in the background</string>

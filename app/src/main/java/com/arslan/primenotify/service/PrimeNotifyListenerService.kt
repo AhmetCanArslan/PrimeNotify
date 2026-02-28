@@ -60,6 +60,12 @@ class PrimeNotifyListenerService : NotificationListenerService() {
         val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString() ?: ""
         val bodyRaw = bigText.ifBlank { text }
 
+        // Skip notifications with no visible content (silent/internal system pings)
+        if (title.isBlank() && bodyRaw.isBlank()) {
+            super.onNotificationPosted(sbn)
+            return
+        }
+
         // Skip notification entirely if it matches an ignore rule
         if (ignoreManager.isIgnored(packageName, title, bodyRaw)) {
             super.onNotificationPosted(sbn)

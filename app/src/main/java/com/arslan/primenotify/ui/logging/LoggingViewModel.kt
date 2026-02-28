@@ -142,9 +142,106 @@ class LoggingViewModel(application: Application) : AndroidViewModel(application)
                 appName = entry.appName,
                 matchValue = entry.body
             )
+            IgnoreType.TITLE_AND_BODY -> IgnoreRule(
+                type = IgnoreType.TITLE_AND_BODY,
+                packageName = entry.packageName,
+                appName = entry.appName,
+                matchValue = entry.title,
+                matchValue2 = entry.body
+            )
         }
         viewModelScope.launch(Dispatchers.IO) {
             ignoreManager.addRule(rule)
+        }
+    }
+
+    /**
+     * Create an ignore rule with a custom pattern (optionally regex).
+     */
+    fun ignoreEntryWithPattern(
+        entry: LogEntry,
+        type: IgnoreType,
+        pattern: String,
+        isRegex: Boolean
+    ) {
+        val rule = IgnoreRule(
+            type = type,
+            packageName = entry.packageName,
+            appName = entry.appName,
+            matchValue = pattern,
+            isRegex = isRegex
+        )
+        viewModelScope.launch(Dispatchers.IO) {
+            ignoreManager.addRule(rule)
+        }
+    }
+
+    /**
+     * Create ignore rules from the unified ignore dialog.
+     *
+     * The app ([entry.packageName]) is ALWAYS the scope — rules only ever match
+     * notifications from that specific app, never from other apps.
+     *
+     * - [titlePattern] non-null → create a TITLE rule (scoped to app)
+     * - [bodyPattern]  non-null → create a BODY  rule (scoped to app)
+     * - both null                → create an APP rule  (ignore ALL from this app)
+     */
+    fun ignoreFromDialog(
+        entry: LogEntry,
+        titlePattern: String?,
+        titleIsRegex: Boolean,
+        bodyPattern: String?,
+        bodyIsRegex: Boolean
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (titlePattern == null && bodyPattern == null) {
+                // No content filters → ignore everything from this app
+                ignoreManager.addRule(
+                    IgnoreRule(
+                        type = IgnoreType.APP,
+                        packageName = entry.packageName,
+                        appName = entry.appName
+                    )
+                )
+                return@launch
+            }
+            if (titlePattern != null && bodyPattern != null) {
+                // Both title AND body provided → single combined rule that requires both to match
+                ignoreManager.addRule(
+                    IgnoreRule(
+                        type = IgnoreType.TITLE_AND_BODY,
+                        packageName = entry.packageName,
+                        appName = entry.appName,
+                        matchValue = titlePattern,
+                        isRegex = titleIsRegex,
+                        matchValue2 = bodyPattern,
+                        isRegex2 = bodyIsRegex
+                    )
+                )
+                return@launch
+            }
+            if (titlePattern != null) {
+                ignoreManager.addRule(
+                    IgnoreRule(
+                        type = IgnoreType.TITLE,
+                        packageName = entry.packageName,
+                        appName = entry.appName,
+                        matchValue = titlePattern,
+                        isRegex = titleIsRegex
+                    )
+                )
+            }
+            if (bodyPattern != null) {
+                ignoreManager.addRule(
+                    IgnoreRule(
+                        type = IgnoreType.BODY,
+                        packageName = entry.packageName,
+                        appName = entry.appName,
+                        matchValue = bodyPattern,
+                        isRegex = bodyIsRegex
+                    )
+                )
+            }
         }
     }
 
