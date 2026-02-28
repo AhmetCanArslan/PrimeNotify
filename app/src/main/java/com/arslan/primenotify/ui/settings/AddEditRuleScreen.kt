@@ -34,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.activity.compose.BackHandler
 import androidx.compose.material.icons.filled.Warning
 import com.arslan.primenotify.R
 import com.arslan.primenotify.data.*
@@ -225,10 +226,27 @@ fun AddEditRuleScreen(
             preventMultipleNotifications = preventMultipleNotifications,
         )
     }
+    // Flag set to true when the user explicitly navigates back (discarding edits).
+    // Uses a stable reference wrapper so onDispose can read the final value.
+    val shouldDiscardDraft = remember { booleanArrayOf(false) }
+
+    // Intercept the system/gesture back button to discard the draft.
+    BackHandler {
+        shouldDiscardDraft[0] = true
+        AddEditRuleDraft.clear(context, draftKey)
+        onNavigateBack()
+    }
+
     // Save the draft whenever this composable leaves composition
-    // (navigation to CreatePattern, back-press, app background, process death).
+    // BUT only when navigating FORWARD (e.g. to CreatePattern).
+    // When the user navigates back (discard intent) we skip the save so
+    // stale data can never pollute the next editing session.
     DisposableEffect(Unit) {
-        onDispose { latestDraft?.let { AddEditRuleDraft.save(context, it) } }
+        onDispose {
+            if (!shouldDiscardDraft[0]) {
+                latestDraft?.let { AddEditRuleDraft.save(context, it) }
+            }
+        }
     }
 
     val consumeAllScrollConnection = remember {
@@ -253,7 +271,11 @@ fun AddEditRuleScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(onClick = {
+                        shouldDiscardDraft[0] = true
+                        AddEditRuleDraft.clear(context, draftKey)
+                        onNavigateBack()
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.cd_back)
@@ -311,7 +333,9 @@ fun AddEditRuleScreen(
                                 } else {
                                     rulesManager.addRule(newRule)
                                 }
-                                // Rule saved successfully – discard the draft
+                                // Rule saved successfully – discard the draft and prevent
+                                // onDispose from re-saving it.
+                                shouldDiscardDraft[0] = true
                                 AddEditRuleDraft.clear(context, draftKey)
                                 onNavigateBack()
                             }
