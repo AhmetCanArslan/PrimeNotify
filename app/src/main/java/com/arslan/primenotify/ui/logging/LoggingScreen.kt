@@ -5,6 +5,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -970,7 +971,14 @@ private fun IgnoreDialog(
                         )
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { 
+                                    titleIsRegex = !titleIsRegex
+                                    titleText = if (titleIsRegex) suggestRegex(entry.title) else entry.title
+                                    errorMessage = null
+                                }
+                                .padding(vertical = 8.dp)
                         ) {
                             Text(
                                 text = stringResource(R.string.ignore_dialog_regex),
@@ -1012,7 +1020,14 @@ private fun IgnoreDialog(
                         )
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { 
+                                    bodyIsRegex = !bodyIsRegex
+                                    bodyText = if (bodyIsRegex) suggestRegex(entry.body) else entry.body
+                                    errorMessage = null
+                                }
+                                .padding(vertical = 8.dp)
                         ) {
                             Text(
                                 text = stringResource(R.string.ignore_dialog_regex),
