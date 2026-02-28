@@ -429,6 +429,12 @@ private fun EditIgnoreRuleDialog(
                                     errorMessage = null
                                 },
                                 label = { Text(stringResource(R.string.ignored_edit_match_title)) },
+                                placeholder = {
+                                    Text(stringResource(
+                                        if (matchValueIsRegex) R.string.ignore_dialog_hint_regex
+                                        else R.string.ignore_dialog_hint_exact
+                                    ))
+                                },
                                 modifier = Modifier.fillMaxWidth(),
                                 maxLines = 2,
                                 singleLine = false,
@@ -465,6 +471,13 @@ private fun EditIgnoreRuleDialog(
                                     errorMessage = null
                                 },
                                 label = { Text(stringResource(R.string.ignored_edit_match_body)) },
+                                placeholder = {
+                                    val isRegex = if (rule.type == IgnoreType.BODY) matchValueIsRegex else matchValue2IsRegex
+                                    Text(stringResource(
+                                        if (isRegex) R.string.ignore_dialog_hint_regex
+                                        else R.string.ignore_dialog_hint_exact
+                                    ))
+                                },
                                 modifier = Modifier.fillMaxWidth(),
                                 maxLines = 3,
                                 singleLine = false,

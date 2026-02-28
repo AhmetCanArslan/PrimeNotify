@@ -957,9 +957,12 @@ private fun IgnoreDialog(
                                 errorMessage = null
                             },
                             label = { Text(stringResource(R.string.ignore_dialog_match_title)) },
-                            placeholder = if (titleIsRegex) {
-                                { Text(stringResource(R.string.ignore_dialog_hint_regex)) }
-                            } else null,
+                            placeholder = {
+                                Text(stringResource(
+                                    if (titleIsRegex) R.string.ignore_dialog_hint_regex
+                                    else R.string.ignore_dialog_hint_exact
+                                ))
+                            },
                             modifier = Modifier.fillMaxWidth(),
                             maxLines = 2,
                             singleLine = false,
@@ -996,9 +999,12 @@ private fun IgnoreDialog(
                                 errorMessage = null
                             },
                             label = { Text(stringResource(R.string.ignore_dialog_match_body)) },
-                            placeholder = if (bodyIsRegex) {
-                                { Text(stringResource(R.string.ignore_dialog_hint_regex)) }
-                            } else null,
+                            placeholder = {
+                                Text(stringResource(
+                                    if (bodyIsRegex) R.string.ignore_dialog_hint_regex
+                                    else R.string.ignore_dialog_hint_exact
+                                ))
+                            },
                             modifier = Modifier.fillMaxWidth(),
                             maxLines = 3,
                             singleLine = false,

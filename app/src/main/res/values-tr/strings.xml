@@ -202,8 +202,8 @@
     <string name="ignore_dialog_error_no_criteria">En az bir eşleşme kriteri seçin</string>
     <string name="ignore_dialog_error_empty_field">Etkinleştirildiğinde kalıp boş olamaz</string>
     <string name="ignore_dialog_error_invalid_regex">Geçersiz regex: %1$s</string>
-    <string name="ignore_dialog_hint_regex">örn. \\d+ sohbetten \\d+ mesaj</string>
-
+    <string name="ignore_dialog_hint_regex">örn. \d+ sohbetten \d+ mesaj</string>
+    <string name="ignore_dialog_hint_exact">Tam eşleşme &#8212; kısmi eşleşme için Regex\'i etkinleştirin</string>
     <!-- Ignored Notifications Screen -->
     <string name="nav_ignored_notifications">Yoksayılan Bildirimler</string>
     <string name="ignored_notifications_title">Yoksayılan Bildirimler</string>

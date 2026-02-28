@@ -202,8 +202,8 @@
     <string name="ignore_dialog_error_no_criteria">Select at least one matching criteria</string>
     <string name="ignore_dialog_error_empty_field">Pattern cannot be empty when enabled</string>
     <string name="ignore_dialog_error_invalid_regex">Invalid regex: %1$s</string>
-    <string name="ignore_dialog_hint_regex">e.g. \\d+ sohbetten \\d+ mesaj</string>
-
+    <string name="ignore_dialog_hint_regex">e.g. \d+ sohbetten \d+ mesaj</string>
+    <string name="ignore_dialog_hint_exact">Exact match &#8212; enable Regex for partial matching</string>
     <!-- Ignored Notifications Screen -->
     <string name="nav_ignored_notifications">Ignored Notifications</string>
     <string name="ignored_notifications_title">Ignored Notifications</string>

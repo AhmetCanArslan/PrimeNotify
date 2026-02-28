@@ -81,9 +81,10 @@ class IgnoreManager(context: Context) {
         }
 
     /**
-     * Matches [text] against [pattern]. When [isRegex] is true the pattern
-     * is compiled as a regular expression; otherwise a simple case-insensitive
-     * substring check is performed.
+     * Matches [text] against [pattern].
+     * - Regex mode: [pattern] is compiled as a regular expression (containsMatchIn).
+     * - Plain mode: [text] must equal [pattern] exactly (case-insensitive).
+     *   Use regex if you need substring/partial matching.
      */
     private fun matchText(text: String, pattern: String, isRegex: Boolean): Boolean {
         return if (isRegex) {
@@ -94,7 +95,7 @@ class IgnoreManager(context: Context) {
                 false
             }
         } else {
-            text.contains(pattern, ignoreCase = true)
+            text.equals(pattern, ignoreCase = true)
         }
     }
 }
