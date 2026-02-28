@@ -49,6 +49,11 @@ fun AddEditRuleScreen(
     val rulesManager = remember { RulesManager(context) }
     val hasProximitySensor = remember { rulesManager.hasProximitySensor() }
 
+    // Draft key – "new" for a new rule, actual ruleId when editing
+    val draftKey = ruleId?.takeIf { it != "new" } ?: "new"
+    // Load any persisted draft (survives CreatePattern navigation and app backgrounding)
+    val draft = remember { AddEditRuleDraft.load(context, draftKey) }
+
     // Consume prefill data (set from Logging screen) for new rules only
     val prefill = remember { if (ruleId == null || ruleId == "new") RulePrefillData.consume() else null }
 
@@ -69,81 +74,119 @@ fun AddEditRuleScreen(
     }
 
     val installedApps by AppListManager.installedApps.collectAsState()
-    var selectedApps by remember(initialRule, installedApps) {
+    var selectedApps by remember(installedApps) {
         mutableStateOf(
-            if (initialRule != null)
-                installedApps.filter { initialRule.packageNames.contains(it.packageName) }
-            else if (prefill != null)
-                installedApps.filter { it.packageName == prefill.packageName }
-            else emptyList()
+            when {
+                draft != null -> installedApps.filter { it.packageName in draft.selectedPackageNames }
+                initialRule != null -> installedApps.filter { initialRule.packageNames.contains(it.packageName) }
+                prefill != null -> installedApps.filter { it.packageName == prefill.packageName }
+                else -> emptyList()
+            }
         )
     }
 
     // Title & Body Keywords (new; legacy `keywords` pre-populated into title for migration)
-    var titleKeywords by remember(initialRule) {
+    var titleKeywords by remember {
         mutableStateOf(
-            initialRule?.titleKeywords?.ifEmpty { initialRule.keywords }
+            draft?.titleKeywords
+                ?: initialRule?.titleKeywords?.ifEmpty { initialRule.keywords }
                 ?: prefill?.titleKeyword?.let { listOf(it) }
                 ?: emptyList()
         )
     }
-    var currentTitleKeyword by remember { mutableStateOf("") }
-    var bodyKeywords by remember(initialRule) {
+    var currentTitleKeyword by remember { mutableStateOf(draft?.currentTitleKeyword ?: "") }
+    var bodyKeywords by remember {
         mutableStateOf(
-            initialRule?.bodyKeywords
+            draft?.bodyKeywords
+                ?: initialRule?.bodyKeywords
                 ?: prefill?.bodyKeyword?.let { listOf(it) }
                 ?: emptyList()
         )
     }
-    var currentBodyKeyword by remember { mutableStateOf("") }
+    var currentBodyKeyword by remember { mutableStateOf(draft?.currentBodyKeyword ?: "") }
 
     // Flash action state
     var customPatterns by remember { mutableStateOf(rulesManager.getCustomPatterns()) }
     var patternToDelete by remember { mutableStateOf<com.arslan.primenotify.data.CustomPattern?>(null) }
-    var flashEnabled by remember(initialFlashAction) { mutableStateOf(initialFlashAction != null) }
-    var flashPattern by remember(initialFlashAction) {
-        mutableStateOf(initialFlashAction?.flashPattern ?: FlashPattern.HEARTBEAT)
+    var flashEnabled by remember { mutableStateOf(draft?.flashEnabled ?: (initialFlashAction != null)) }
+    var flashPattern by remember {
+        mutableStateOf(
+            draft?.flashPattern?.let { runCatching { FlashPattern.valueOf(it) }.getOrNull() }
+                ?: initialFlashAction?.flashPattern
+                ?: FlashPattern.HEARTBEAT
+        )
     }
-    var flashCustomPatternId by remember(initialFlashAction) {
-        mutableStateOf(initialFlashAction?.customPatternId)
+    var flashCustomPatternId by remember {
+        mutableStateOf(draft?.flashCustomPatternId ?: initialFlashAction?.customPatternId)
     }
     var expandedFlashPatterns by remember { mutableStateOf(false) }
 
     // WakeUp action state
-    var wakeUpEnabled by remember(initialWakeUpAction) { mutableStateOf(initialWakeUpAction != null) }
-    var screenDurationSeconds by remember(initialWakeUpAction) {
-        mutableIntStateOf(initialWakeUpAction?.screenDurationSeconds ?: 10)
+    var wakeUpEnabled by remember { mutableStateOf(draft?.wakeUpEnabled ?: (initialWakeUpAction != null)) }
+    var screenDurationSeconds by remember {
+        mutableIntStateOf(draft?.screenDurationSeconds ?: initialWakeUpAction?.screenDurationSeconds ?: 10)
     }
-    var pocketModeEnabled by remember(initialWakeUpAction) {
-        mutableStateOf(initialWakeUpAction?.pocketModeEnabled ?: true)
+    var pocketModeEnabled by remember {
+        mutableStateOf(draft?.pocketModeEnabled ?: initialWakeUpAction?.pocketModeEnabled ?: true)
     }
     var expandedWakeUpDuration by remember { mutableStateOf(false) }
 
     // AOD action state
-    var aodEnabled by remember(initialAodAction) { mutableStateOf(initialAodAction != null) }
-    var aodDurationSeconds by remember(initialAodAction) {
-        mutableIntStateOf(initialAodAction?.aodDurationSeconds ?: 10)
+    var aodEnabled by remember { mutableStateOf(draft?.aodEnabled ?: (initialAodAction != null)) }
+    var aodDurationSeconds by remember {
+        mutableIntStateOf(draft?.aodDurationSeconds ?: initialAodAction?.aodDurationSeconds ?: 10)
     }
     var expandedAodDuration by remember { mutableStateOf(false) }
 
     // Shared conditions
-    var applyOnVibration by remember(initialRule) {
-        mutableStateOf(initialRule?.applyOnVibration ?: true)
+    var applyOnVibration by remember {
+        mutableStateOf(draft?.applyOnVibration ?: initialRule?.applyOnVibration ?: true)
     }
-    var applyOnSilent by remember(initialRule) {
-        mutableStateOf(initialRule?.applyOnSilent ?: true)
+    var applyOnSilent by remember {
+        mutableStateOf(draft?.applyOnSilent ?: initialRule?.applyOnSilent ?: true)
     }
-    var applyOnDND by remember(initialRule) {
-        mutableStateOf(initialRule?.applyOnDND ?: true)
+    var applyOnDND by remember {
+        mutableStateOf(draft?.applyOnDND ?: initialRule?.applyOnDND ?: true)
     }
-    var preventMultipleNotifications by remember(initialRule) {
-        mutableStateOf(initialRule?.preventMultipleNotifications ?: false)
+    var preventMultipleNotifications by remember {
+        mutableStateOf(draft?.preventMultipleNotifications ?: initialRule?.preventMultipleNotifications ?: false)
     }
 
     val wakeUpDurationOptions = listOf(0, 5, 10, 15, 30, 60)
     val aodDurationOptions = listOf(-1, -2, 5, 10, 15, 30, 60, 120, 300)
 
     val atLeastOneAction = flashEnabled || wakeUpEnabled || aodEnabled
+
+    // Keep a snapshot of the current form state so onDispose can persist it.
+    // SideEffect runs after every successful recomposition, always capturing latest values.
+    var latestDraft by remember { mutableStateOf<AddEditRuleDraft.Draft?>(null) }
+    SideEffect {
+        latestDraft = AddEditRuleDraft.Draft(
+            ruleId = draftKey,
+            selectedPackageNames = selectedApps.map { it.packageName },
+            titleKeywords = titleKeywords,
+            currentTitleKeyword = currentTitleKeyword,
+            bodyKeywords = bodyKeywords,
+            currentBodyKeyword = currentBodyKeyword,
+            flashEnabled = flashEnabled,
+            flashPattern = flashPattern.name,
+            flashCustomPatternId = flashCustomPatternId,
+            wakeUpEnabled = wakeUpEnabled,
+            screenDurationSeconds = screenDurationSeconds,
+            pocketModeEnabled = pocketModeEnabled,
+            aodEnabled = aodEnabled,
+            aodDurationSeconds = aodDurationSeconds,
+            applyOnVibration = applyOnVibration,
+            applyOnSilent = applyOnSilent,
+            applyOnDND = applyOnDND,
+            preventMultipleNotifications = preventMultipleNotifications,
+        )
+    }
+    // Save the draft whenever this composable leaves composition
+    // (navigation to CreatePattern, back-press, app background, process death).
+    DisposableEffect(Unit) {
+        onDispose { latestDraft?.let { AddEditRuleDraft.save(context, it) } }
+    }
 
     val consumeAllScrollConnection = remember {
         object : NestedScrollConnection {
@@ -225,6 +268,8 @@ fun AddEditRuleScreen(
                                 } else {
                                     rulesManager.addRule(newRule)
                                 }
+                                // Rule saved successfully – discard the draft
+                                AddEditRuleDraft.clear(context, draftKey)
                                 onNavigateBack()
                             }
                         },
