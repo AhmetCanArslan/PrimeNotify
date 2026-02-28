@@ -25,7 +25,7 @@ import kotlinx.coroutines.withContext
 
 class LoggingViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val loggingManager = LoggingManager(application)
+    private val loggingManager = LoggingManager.getInstance(application)
     private val ignoreManager = IgnoreManager(application)
     val loggingPreferences = LoggingPreferences(application)
 

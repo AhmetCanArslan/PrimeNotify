@@ -36,7 +36,7 @@ class PrimeNotifyListenerService : NotificationListenerService() {
         flashManager = FlashManager(this)
         screenWakeManager = ScreenWakeManager(this)
         aodManager = AodManager(this)
-        loggingManager = LoggingManager(this)
+        loggingManager = LoggingManager.getInstance(this)
         loggingPreferences = LoggingPreferences(this)
         startPersistentNotification()
     }

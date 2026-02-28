@@ -6,9 +6,9 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
 @Keep
-class LoggingManager(context: Context) {
+class LoggingManager private constructor(context: Context) {
 
-    private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     private val gson = Gson()
 
     // Lazy-loaded so Gson deserialization happens on the first IO-thread call
@@ -120,5 +120,13 @@ class LoggingManager(context: Context) {
         private const val LOG_ENTRIES_KEY = "log_entries_list"
         private const val MAX_ENTRIES = 500
         private const val DEDUP_WINDOW_MS = 3_000L
+
+        @Volatile
+        private var instance: LoggingManager? = null
+
+        fun getInstance(context: Context): LoggingManager =
+            instance ?: synchronized(this) {
+                instance ?: LoggingManager(context.applicationContext).also { instance = it }
+            }
     }
 }
