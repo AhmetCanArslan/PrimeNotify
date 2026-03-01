@@ -95,11 +95,15 @@ private fun ScreenFlashContent(
     durationSeconds: Int,
     onFinish: () -> Unit,
 ) {
-    var showColor by remember { mutableStateOf(true) }
+    var showColor by remember { mutableStateOf(false) }
     val untilInteraction = durationSeconds == -1
+    val initialOverlayDelayMs = 500L
+    val visibleFlashColor = flashColor.copy(alpha = 0.72f)
+    val dimBackground = Color.Black.copy(alpha = 0.35f)
 
-    // Flash cycle: 250ms colour ↔ 250ms black
+    // Let the activity fully open first, then begin flashing
     LaunchedEffect(Unit) {
+        delay(initialOverlayDelayMs)
         val totalMs = if (untilInteraction) Long.MAX_VALUE else durationSeconds * 1000L
         val startTime = System.currentTimeMillis()
         while (System.currentTimeMillis() - startTime < totalMs) {
@@ -111,22 +115,16 @@ private fun ScreenFlashContent(
         onFinish()
     }
 
-    val currentColor = if (showColor) flashColor else Color.Black
+    val currentColor = if (showColor) visibleFlashColor else dimBackground
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(currentColor)
-            .then(
-                if (untilInteraction) {
-                    Modifier.clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = onFinish
-                    )
-                } else {
-                    Modifier
-                }
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onFinish
             )
     )
 }
