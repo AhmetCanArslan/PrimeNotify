@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
@@ -367,7 +368,6 @@ private fun EditIgnoreRuleDialog(
     onSave: (IgnoreRule) -> Unit
 ) {
     val appDisplayName = rule.appName?.ifBlank { null } ?: rule.packageName
-    val isAppOnly = rule.type == IgnoreType.APP
 
     var matchValueText by remember { mutableStateOf(rule.matchValue.orEmpty()) }
     var matchValueIsRegex by remember { mutableStateOf(rule.isRegex) }
@@ -412,15 +412,16 @@ private fun EditIgnoreRuleDialog(
                     }
                 }
 
-                if (isAppOnly) {
+                if (rule.type == IgnoreType.APP) {
                     Text(
-                        text = stringResource(R.string.ignored_edit_app_only, appDisplayName),
+                        text = stringResource(R.string.ignored_edit_app_only_hint),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                } else {
-                    // Title pattern field (for TITLE and TITLE_AND_BODY)
-                    if (rule.type == IgnoreType.TITLE || rule.type == IgnoreType.TITLE_AND_BODY) {
+                }
+                run {
+                    // Title pattern field (for TITLE, TITLE_AND_BODY, and APP)
+                    if (rule.type == IgnoreType.TITLE || rule.type == IgnoreType.TITLE_AND_BODY || rule.type == IgnoreType.APP) {
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             OutlinedTextField(
                                 value = matchValueText,
@@ -435,6 +436,13 @@ private fun EditIgnoreRuleDialog(
                                         else R.string.ignore_dialog_hint_exact
                                     ))
                                 },
+                                trailingIcon = {
+                                    if (matchValueText.isNotEmpty()) {
+                                        IconButton(onClick = { matchValueText = ""; errorMessage = null }) {
+                                            Icon(Icons.Default.Close, contentDescription = null)
+                                        }
+                                    }
+                                },
                                 modifier = Modifier.fillMaxWidth(),
                                 maxLines = 2,
                                 singleLine = false,
@@ -442,7 +450,13 @@ private fun EditIgnoreRuleDialog(
                             )
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        matchValueIsRegex = !matchValueIsRegex
+                                        errorMessage = null
+                                    }
+                                    .padding(vertical = 4.dp)
                             ) {
                                 Text(
                                     text = stringResource(R.string.ignored_edit_regex),
@@ -460,8 +474,8 @@ private fun EditIgnoreRuleDialog(
                         }
                     }
 
-                    // Body pattern field (for BODY and TITLE_AND_BODY)
-                    if (rule.type == IgnoreType.BODY || rule.type == IgnoreType.TITLE_AND_BODY) {
+                    // Body pattern field (for BODY, TITLE_AND_BODY, and APP)
+                    if (rule.type == IgnoreType.BODY || rule.type == IgnoreType.TITLE_AND_BODY || rule.type == IgnoreType.APP) {
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             OutlinedTextField(
                                 value = if (rule.type == IgnoreType.BODY) matchValueText else matchValue2Text,
@@ -478,6 +492,18 @@ private fun EditIgnoreRuleDialog(
                                         else R.string.ignore_dialog_hint_exact
                                     ))
                                 },
+                                trailingIcon = {
+                                    val bodyVal = if (rule.type == IgnoreType.BODY) matchValueText else matchValue2Text
+                                    if (bodyVal.isNotEmpty()) {
+                                        IconButton(onClick = {
+                                            if (rule.type == IgnoreType.BODY) matchValueText = ""
+                                            else matchValue2Text = ""
+                                            errorMessage = null
+                                        }) {
+                                            Icon(Icons.Default.Close, contentDescription = null)
+                                        }
+                                    }
+                                },
                                 modifier = Modifier.fillMaxWidth(),
                                 maxLines = 3,
                                 singleLine = false,
@@ -485,7 +511,14 @@ private fun EditIgnoreRuleDialog(
                             )
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        if (rule.type == IgnoreType.BODY) matchValueIsRegex = !matchValueIsRegex
+                                        else matchValue2IsRegex = !matchValue2IsRegex
+                                        errorMessage = null
+                                    }
+                                    .padding(vertical = 4.dp)
                             ) {
                                 Text(
                                     text = stringResource(R.string.ignored_edit_regex),
@@ -515,11 +548,10 @@ private fun EditIgnoreRuleDialog(
             }
         },
         confirmButton = {
-            if (!isAppOnly) {
-                Button(onClick = {
+            Button(onClick = {
                     // Validate
                     val titleValue = matchValueText.trim()
-                    val bodyValue = if (rule.type == IgnoreType.TITLE_AND_BODY) matchValue2Text.trim() else ""
+                    val bodyValue = if (rule.type == IgnoreType.TITLE_AND_BODY || rule.type == IgnoreType.APP) matchValue2Text.trim() else ""
                     if ((rule.type == IgnoreType.TITLE || rule.type == IgnoreType.TITLE_AND_BODY) && titleValue.isBlank()) {
                         errorMessage = "Pattern cannot be empty."
                         return@Button
@@ -545,6 +577,30 @@ private fun EditIgnoreRuleDialog(
                         }
                     }
                     val updatedRule = when (rule.type) {
+                        IgnoreType.APP -> when {
+                            titleValue.isNotBlank() && bodyValue.isNotBlank() -> rule.copy(
+                                type = IgnoreType.TITLE_AND_BODY,
+                                matchValue = titleValue,
+                                isRegex = matchValueIsRegex,
+                                matchValue2 = bodyValue,
+                                isRegex2 = matchValue2IsRegex
+                            )
+                            titleValue.isNotBlank() -> rule.copy(
+                                type = IgnoreType.TITLE,
+                                matchValue = titleValue,
+                                isRegex = matchValueIsRegex,
+                                matchValue2 = null,
+                                isRegex2 = false
+                            )
+                            bodyValue.isNotBlank() -> rule.copy(
+                                type = IgnoreType.BODY,
+                                matchValue = bodyValue,
+                                isRegex = matchValue2IsRegex,
+                                matchValue2 = null,
+                                isRegex2 = false
+                            )
+                            else -> rule // no patterns entered, keep as APP
+                        }
                         IgnoreType.TITLE -> rule.copy(
                             matchValue = titleValue,
                             isRegex = matchValueIsRegex
@@ -559,13 +615,11 @@ private fun EditIgnoreRuleDialog(
                             matchValue2 = bodyValue,
                             isRegex2 = matchValue2IsRegex
                         )
-                        else -> rule
                     }
                     onSave(updatedRule)
                 }) {
                     Text(stringResource(R.string.ignored_edit_save))
                 }
-            }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {

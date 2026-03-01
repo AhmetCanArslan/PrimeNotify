@@ -235,6 +235,7 @@ Ignore a notification from the logs to suppress it in the future.</string>
     <string name="ignored_edit_app_scope">App scope: %1$s</string>
     <string name="ignored_edit_app_scope_hint">This rule applies only to notifications from this app.</string>
     <string name="ignored_edit_app_only">This rule mutes all notifications from %1$s. There are no patterns to edit.</string>
+    <string name="ignored_edit_app_only_hint">Currently muting all notifications from this app. Add a header or body pattern below to narrow the rule to specific notifications.</string>
     <string name="ignored_edit_match_title">Title pattern</string>
     <string name="ignored_edit_match_body">Body pattern</string>
     <string name="ignored_edit_regex">Regex</string>
