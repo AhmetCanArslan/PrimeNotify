@@ -1,7 +1,6 @@
 package com.arslan.primenotify.ui.permissions
 
 import android.Manifest
-import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -161,10 +160,6 @@ fun PermissionsScreen(modifier: Modifier = Modifier) {
                                         settingsLauncher.launch(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
                                     }
 
-                                    PermissionType.NotificationPolicy -> {
-                                        settingsLauncher.launch(Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS))
-                                    }
-
                                     PermissionType.IgnoreBatteryOptimizations -> {
                                         settingsLauncher.launch(
                                             Intent(
@@ -254,7 +249,10 @@ fun PermissionsScreen(modifier: Modifier = Modifier) {
                 }
             },
             confirmButton = {
-                Button(onClick = { showAdbDialog = false }) {
+                Button(onClick = {
+                    showAdbDialog = false
+                    refreshState++
+                }) {
                     Text(stringResource(R.string.got_it))
                 }
             },
@@ -279,7 +277,6 @@ private enum class PermissionType {
     NotificationAccess,
     PostNotifications,
     Camera,
-    NotificationPolicy,
     IgnoreBatteryOptimizations,
     WriteSecureSettings,
     OverlayPermission
@@ -293,7 +290,6 @@ private data class PermissionItem(
 )
 
 private fun buildPermissionItems(context: Context): List<PermissionItem> {
-    val notificationManager = context.getSystemService(NotificationManager::class.java)
     val postNotificationsGranted =
         Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
             ContextCompat.checkSelfPermission(
@@ -309,8 +305,6 @@ private fun buildPermissionItems(context: Context): List<PermissionItem> {
     val notificationAccessGranted = NotificationManagerCompat
         .getEnabledListenerPackages(context)
         .contains(context.packageName)
-
-    val notificationPolicyGranted = notificationManager?.isNotificationPolicyAccessGranted == true
 
     val powerManager = context.getSystemService(PowerManager::class.java)
     val ignoreBatteryOptimizationsGranted = powerManager?.isIgnoringBatteryOptimizations(context.packageName) == true
@@ -333,12 +327,6 @@ private fun buildPermissionItems(context: Context): List<PermissionItem> {
             title = context.getString(R.string.permission_camera_flash),
             description = context.getString(R.string.permission_camera_flash_desc),
             granted = cameraGranted
-        ),
-        PermissionItem(
-            type = PermissionType.NotificationPolicy,
-            title = context.getString(R.string.permission_notification_policy),
-            description = context.getString(R.string.permission_notification_policy_desc),
-            granted = notificationPolicyGranted
         ),
         PermissionItem(
             type = PermissionType.IgnoreBatteryOptimizations,

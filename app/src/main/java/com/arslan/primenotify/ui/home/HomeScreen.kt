@@ -139,6 +139,7 @@ fun HomeScreen(
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
+                onClick = onNavigateToRules,
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
                 )
@@ -165,12 +166,11 @@ fun HomeScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    IconButton(onClick = onNavigateToRules) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = stringResource(R.string.cd_settings)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = stringResource(R.string.cd_settings),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 
@@ -303,7 +303,6 @@ enum class PermissionType {
     NotificationAccess,
     PostNotifications,
     Camera,
-    NotificationPolicy,
     IgnoreBatteryOptimizations,
     WriteSecureSettings
 }
@@ -316,7 +315,6 @@ data class PermissionItem(
 )
 
 fun buildPermissionItems(context: Context): List<PermissionItem> {
-    val notificationManager = context.getSystemService(android.app.NotificationManager::class.java)
     val postNotificationsGranted =
         Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
             ContextCompat.checkSelfPermission(
@@ -332,8 +330,6 @@ fun buildPermissionItems(context: Context): List<PermissionItem> {
     val notificationAccessGranted = NotificationManagerCompat
         .getEnabledListenerPackages(context)
         .contains(context.packageName)
-
-    val notificationPolicyGranted = notificationManager?.isNotificationPolicyAccessGranted == true
 
     val powerManager = context.getSystemService(PowerManager::class.java)
     val ignoreBatteryOptimizationsGranted = powerManager?.isIgnoringBatteryOptimizations(context.packageName) == true
@@ -361,12 +357,6 @@ fun buildPermissionItems(context: Context): List<PermissionItem> {
             title = context.getString(R.string.permission_camera_flash),
             description = context.getString(R.string.permission_camera_flash_desc),
             granted = cameraGranted
-        ),
-        PermissionItem(
-            type = PermissionType.NotificationPolicy,
-            title = context.getString(R.string.permission_notification_policy),
-            description = context.getString(R.string.permission_notification_policy_desc),
-            granted = notificationPolicyGranted
         ),
         PermissionItem(
             type = PermissionType.IgnoreBatteryOptimizations,
