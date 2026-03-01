@@ -1,5 +1,6 @@
 package com.arslan.primenotify.service
 
+import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
 import android.os.PowerManager
@@ -16,13 +17,20 @@ import com.arslan.primenotify.ui.ScreenFlashActivity
 class ScreenFlashManager(private val context: Context) {
 
     private val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+    private val keyguardManager = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
 
     fun triggerFlash(color: ScreenFlashColor, durationSeconds: Int) {
         // Stop any currently running flash overlay
         stop()
 
+        val isScreenOff = !powerManager.isInteractive
+        val isDeviceLocked = keyguardManager.isDeviceLocked || keyguardManager.isKeyguardLocked
+
+        // Only flash when screen is off/closed or device is locked
+        if (!isScreenOff && !isDeviceLocked) return
+
         // If screen is off, wake it briefly so the activity becomes visible
-        if (!powerManager.isInteractive) {
+        if (isScreenOff) {
             @Suppress("DEPRECATION")
             val wl = powerManager.newWakeLock(
                 PowerManager.FULL_WAKE_LOCK
