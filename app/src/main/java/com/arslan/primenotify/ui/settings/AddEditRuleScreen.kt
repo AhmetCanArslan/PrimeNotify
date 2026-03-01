@@ -345,6 +345,13 @@ fun AddEditRuleScreen(
         }
     }
 
+    val scrollState = rememberScrollState()
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val imeBottom = WindowInsets.ime.getBottom(density)
+    LaunchedEffect(imeBottom) {
+        scrollState.animateScrollTo(scrollState.value + imeBottom)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -438,8 +445,9 @@ fun AddEditRuleScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
                 .padding(innerPadding)
+                .imePadding()
                 .padding(horizontal = 16.dp)
                 .padding(top = 8.dp, bottom = 16.dp)
                 .pointerInput(Unit) {
