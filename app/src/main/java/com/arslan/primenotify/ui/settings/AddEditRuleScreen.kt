@@ -80,6 +80,10 @@ fun AddEditRuleScreen(
         initialRule?.actions?.firstOrNull { it.type == RuleType.FLASH_SCREEN }
     }
 
+    LaunchedEffect(Unit) {
+        AppListManager.refresh(context)
+    }
+
     val installedApps by AppListManager.installedApps.collectAsState()
     var selectedApps by remember(installedApps) {
         mutableStateOf(

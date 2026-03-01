@@ -1,12 +1,16 @@
 package com.arslan.primenotify.data
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.os.Build
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.ConcurrentHashMap
@@ -65,12 +69,33 @@ object AppListManager {
     @Volatile
     private var appContext: Context? = null
 
+    @Volatile
+    private var receiverRegistered = false
+
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    private val packageChangeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            refresh(context)
+        }
+    }
+
     fun initialize(context: Context) {
-        if (_installedApps.value.isNotEmpty()) return
         val ctx = context.applicationContext
         appContext = ctx
+        registerPackageChangeReceiverIfNeeded(ctx)
+        if (_installedApps.value.isNotEmpty()) return
+        refreshInstalledApps(ctx)
+    }
+
+    fun refresh(context: Context? = null) {
+        val ctx = context?.applicationContext ?: appContext ?: return
+        appContext = ctx
+        registerPackageChangeReceiverIfNeeded(ctx)
+        refreshInstalledApps(ctx)
+    }
+
+    private fun refreshInstalledApps(ctx: Context) {
         applicationScope.launch {
             val pm = ctx.packageManager
             val iconDir = File(ctx.cacheDir, ICON_CACHE_DIR).also { it.mkdirs() }
@@ -93,6 +118,11 @@ object AppListManager {
                     icon = icon
                 )
             }.sortedBy { it.name.lowercase() }
+
+            val packageSet = phase1Apps.mapTo(HashSet(phase1Apps.size)) { it.packageName }
+            for (knownPkg in iconIndex.keys) {
+                if (knownPkg !in packageSet) iconIndex.remove(knownPkg)
+            }
 
             // Emit immediately so the UI shows whatever is cached on disk right away
             _installedApps.value = phase1Apps
@@ -120,6 +150,30 @@ object AppListManager {
             }
 
             if (changed) _installedApps.value = ArrayList(mutableApps)
+        }
+    }
+
+    private fun registerPackageChangeReceiverIfNeeded(ctx: Context) {
+        if (receiverRegistered) return
+
+        synchronized(this) {
+            if (receiverRegistered) return
+
+            val filter = IntentFilter().apply {
+                addAction(Intent.ACTION_PACKAGE_ADDED)
+                addAction(Intent.ACTION_PACKAGE_REMOVED)
+                addAction(Intent.ACTION_PACKAGE_REPLACED)
+                addDataScheme("package")
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ctx.registerReceiver(packageChangeReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+            } else {
+                @Suppress("UnspecifiedRegisterReceiverFlag")
+                ctx.registerReceiver(packageChangeReceiver, filter)
+            }
+
+            receiverRegistered = true
         }
     }
 
