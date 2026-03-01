@@ -199,11 +199,13 @@ private fun NotificationRuleCard(
                                 RuleType.FLASH -> stringResource(R.string.logs_filter_flash)
                                 RuleType.WAKE_UP -> stringResource(R.string.logs_filter_wake_up)
                                 RuleType.AOD -> stringResource(R.string.logs_filter_aod)
+                                RuleType.FLASH_SCREEN -> stringResource(R.string.logs_filter_flash_screen)
                             }
                             val color = when (action.type) {
                                 RuleType.FLASH -> MaterialTheme.colorScheme.tertiary
                                 RuleType.WAKE_UP -> MaterialTheme.colorScheme.secondary
                                 RuleType.AOD -> MaterialTheme.colorScheme.primary
+                                RuleType.FLASH_SCREEN -> MaterialTheme.colorScheme.error
                             }
                             Surface(
                                 shape = MaterialTheme.shapes.small,

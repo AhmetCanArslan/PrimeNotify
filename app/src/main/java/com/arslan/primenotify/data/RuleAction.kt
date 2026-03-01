@@ -34,6 +34,15 @@ data class RuleAction(
     /** Seconds for AOD. -1 = until notification dismissed. -2 = until phone unlocked. */
     @SerializedName("aodDurationSeconds")
     val aodDurationSeconds: Int? = null,
+
+    // ── Flash Screen-specific ─────────────────────────────────────────────────
+    /** Enum name of [ScreenFlashColor]. */
+    @SerializedName("screenFlashColor")
+    val screenFlashColor: String? = null,
+
+    /** Seconds the screen flashes. -1 = until user taps the screen. */
+    @SerializedName("screenFlashDurationSeconds")
+    val screenFlashDurationSeconds: Int? = null,
 ) : Parcelable {
 
     companion object {
@@ -58,6 +67,15 @@ data class RuleAction(
         fun aod(durationSeconds: Int = 10) = RuleAction(
             type = RuleType.AOD,
             aodDurationSeconds = durationSeconds,
+        )
+
+        fun flashScreen(
+            color: ScreenFlashColor = ScreenFlashColor.RED,
+            durationSeconds: Int = 5,
+        ) = RuleAction(
+            type = RuleType.FLASH_SCREEN,
+            screenFlashColor = color.name,
+            screenFlashDurationSeconds = durationSeconds,
         )
     }
 }

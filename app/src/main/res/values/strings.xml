@@ -294,4 +294,25 @@ Ignore a notification from the logs to suppress it in the future.</string>
     <!-- Add/Edit Rule – Ignore conflict warning -->
     <string name="rule_conflict_warning_title">Conflict with ignored notifications</string>
     <string name="rule_conflict_warning_body">The following matches are blocked by your ignore list. This rule may never trigger:</string>
+
+    <!-- Flash Screen Action -->
+    <string name="flash_screen_title">Flash Screen</string>
+    <string name="flash_screen_color_label">Color</string>
+    <string name="flash_screen_duration_label">Duration</string>
+    <string name="flash_screen_until_interaction">Until interaction</string>
+    <string name="logs_filter_flash_screen">Flash Screen</string>
+    <string name="permission_overlay_title">Display Over Other Apps</string>
+    <string name="permission_overlay_desc">Required for flash screen action to show a full-screen overlay</string>
+    <string name="flash_screen_color_red">Red</string>
+    <string name="flash_screen_color_green">Green</string>
+    <string name="flash_screen_color_blue">Blue</string>
+    <string name="flash_screen_color_yellow">Yellow</string>
+    <string name="flash_screen_color_orange">Orange</string>
+    <string name="flash_screen_color_purple">Purple</string>
+    <string name="flash_screen_color_cyan">Cyan</string>
+    <string name="flash_screen_color_magenta">Magenta</string>
+    <string name="flash_screen_color_white">White</string>
+    <string name="flash_screen_color_pink">Pink</string>
+    <string name="flash_screen_color_lime">Lime</string>
+    <string name="flash_screen_color_teal">Teal</string>
 </resources>

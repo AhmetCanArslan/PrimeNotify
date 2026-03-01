@@ -9,7 +9,8 @@ import java.util.UUID
 enum class RuleType {
     FLASH,
     WAKE_UP,
-    AOD
+    AOD,
+    FLASH_SCREEN
 }
 
 @Keep

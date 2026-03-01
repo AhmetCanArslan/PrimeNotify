@@ -263,6 +263,13 @@ fun LoggingScreen(
                         label = { Text(stringResource(R.string.logs_filter_aod)) }
                     )
                 }
+                item {
+                    FilterChip(
+                        selected = filter == RuleType.FLASH_SCREEN,
+                        onClick = { viewModel.setFilter(RuleType.FLASH_SCREEN) },
+                        label = { Text(stringResource(R.string.logs_filter_flash_screen)) }
+                    )
+                }
             }
 
             if (logs.isEmpty()) {
@@ -723,6 +730,7 @@ private fun RuleBadge(rule: MatchedRuleInfo) {
         RuleType.FLASH -> Pair(stringResource(R.string.logs_filter_flash), MaterialTheme.colorScheme.tertiary)
         RuleType.WAKE_UP -> Pair(stringResource(R.string.logs_filter_wake_up), MaterialTheme.colorScheme.secondary)
         RuleType.AOD -> Pair(stringResource(R.string.logs_filter_aod), MaterialTheme.colorScheme.primary)
+        RuleType.FLASH_SCREEN -> Pair(stringResource(R.string.logs_filter_flash_screen), MaterialTheme.colorScheme.error)
     }
 
     Surface(

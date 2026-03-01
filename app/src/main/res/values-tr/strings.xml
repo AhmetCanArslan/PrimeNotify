@@ -285,4 +285,25 @@ Gelecekte bastırmak için günlüklerden bir bildirimi yoksayın.</string>
     <!-- Add/Edit Rule – Ignore conflict warning -->
     <string name="rule_conflict_warning_title">Yoksay listesiyle çakışma</string>
     <string name="rule_conflict_warning_body">Aşağıdaki eşleşmeler yoksay listeniz tarafından engelleniyor. Bu kural hiç tetiklenmeyebilir:</string>
+
+    <!-- Flash Screen Action -->
+    <string name="flash_screen_title">Ekran Flash</string>
+    <string name="flash_screen_color_label">Renk</string>
+    <string name="flash_screen_duration_label">Süre</string>
+    <string name="flash_screen_until_interaction">Etkileşime kadar</string>
+    <string name="logs_filter_flash_screen">Ekran Flash</string>
+    <string name="permission_overlay_title">Diğer Uygulamaların Üzerinde Göster</string>
+    <string name="permission_overlay_desc">Ekran flash aksiyonunun tam ekran kaplama gösterebilmesi için gerekli</string>
+    <string name="flash_screen_color_red">Kırmızı</string>
+    <string name="flash_screen_color_green">Yeşil</string>
+    <string name="flash_screen_color_blue">Mavi</string>
+    <string name="flash_screen_color_yellow">Sarı</string>
+    <string name="flash_screen_color_orange">Turuncu</string>
+    <string name="flash_screen_color_purple">Mor</string>
+    <string name="flash_screen_color_cyan">Camgöbeği</string>
+    <string name="flash_screen_color_magenta">Magenta</string>
+    <string name="flash_screen_color_white">Beyaz</string>
+    <string name="flash_screen_color_pink">Pembe</string>
+    <string name="flash_screen_color_lime">Limon Yeşili</string>
+    <string name="flash_screen_color_teal">Deniz Yeşili</string>
 </resources>

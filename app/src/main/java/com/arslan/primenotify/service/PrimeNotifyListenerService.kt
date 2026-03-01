@@ -17,6 +17,7 @@ import com.arslan.primenotify.data.LoggingPreferences
 import com.arslan.primenotify.data.MatchedRuleInfo
 import com.arslan.primenotify.data.RuleType
 import com.arslan.primenotify.data.RulesManager
+import com.arslan.primenotify.data.ScreenFlashColor
 
 class PrimeNotifyListenerService : NotificationListenerService() {
 
@@ -25,6 +26,7 @@ class PrimeNotifyListenerService : NotificationListenerService() {
     private lateinit var flashManager: FlashManager
     private lateinit var screenWakeManager: ScreenWakeManager
     private lateinit var aodManager: AodManager
+    private lateinit var screenFlashManager: ScreenFlashManager
     private lateinit var loggingManager: LoggingManager
     private lateinit var loggingPreferences: LoggingPreferences
     private var lastPurgeTime = 0L
@@ -36,6 +38,7 @@ class PrimeNotifyListenerService : NotificationListenerService() {
         flashManager = FlashManager(this)
         screenWakeManager = ScreenWakeManager(this)
         aodManager = AodManager(this)
+        screenFlashManager = ScreenFlashManager(this)
         loggingManager = LoggingManager.getInstance(this)
         loggingPreferences = LoggingPreferences(this)
         startPersistentNotification()
@@ -45,6 +48,7 @@ class PrimeNotifyListenerService : NotificationListenerService() {
         flashManager.stop()
         screenWakeManager.stop()
         aodManager.stop()
+        screenFlashManager.stop()
         stopForeground(STOP_FOREGROUND_REMOVE)
         super.onDestroy()
     }
@@ -137,6 +141,13 @@ class PrimeNotifyListenerService : NotificationListenerService() {
                         }
                         RuleType.AOD -> {
                             aodManager.triggerAod(durationSeconds = action.aodDurationSeconds ?: 10)
+                        }
+                        RuleType.FLASH_SCREEN -> {
+                            val color = ScreenFlashColor.fromName(action.screenFlashColor)
+                            screenFlashManager.triggerFlash(
+                                color = color,
+                                durationSeconds = action.screenFlashDurationSeconds ?: 5,
+                            )
                         }
                     }
                 }

@@ -177,6 +177,15 @@ fun PermissionsScreen(modifier: Modifier = Modifier) {
                                     PermissionType.WriteSecureSettings -> {
                                         showAdbDialog = true
                                     }
+
+                                    PermissionType.OverlayPermission -> {
+                                        settingsLauncher.launch(
+                                            Intent(
+                                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                                Uri.parse("package:${context.packageName}")
+                                            )
+                                        )
+                                    }
                                 }
                             }
                         ) {
@@ -272,7 +281,8 @@ private enum class PermissionType {
     Camera,
     NotificationPolicy,
     IgnoreBatteryOptimizations,
-    WriteSecureSettings
+    WriteSecureSettings,
+    OverlayPermission
 }
 
 private data class PermissionItem(
@@ -341,6 +351,12 @@ private fun buildPermissionItems(context: Context): List<PermissionItem> {
             title = context.getString(R.string.permission_secure_settings),
             description = context.getString(R.string.permission_secure_settings_desc),
             granted = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED
+        ),
+        PermissionItem(
+            type = PermissionType.OverlayPermission,
+            title = context.getString(R.string.permission_overlay_title),
+            description = context.getString(R.string.permission_overlay_desc),
+            granted = Settings.canDrawOverlays(context)
         )
     )
 }

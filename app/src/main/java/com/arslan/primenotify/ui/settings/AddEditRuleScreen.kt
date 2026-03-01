@@ -76,6 +76,9 @@ fun AddEditRuleScreen(
     val initialAodAction = remember(initialRule) {
         initialRule?.actions?.firstOrNull { it.type == RuleType.AOD }
     }
+    val initialScreenFlashAction = remember(initialRule) {
+        initialRule?.actions?.firstOrNull { it.type == RuleType.FLASH_SCREEN }
+    }
 
     val installedApps by AppListManager.installedApps.collectAsState()
     var selectedApps by remember(installedApps) {
@@ -142,6 +145,22 @@ fun AddEditRuleScreen(
     }
     var expandedAodDuration by remember { mutableStateOf(false) }
 
+    // Flash Screen action state
+    var screenFlashEnabled by remember {
+        mutableStateOf(draft?.screenFlashEnabled ?: (initialScreenFlashAction != null))
+    }
+    var screenFlashColor by remember {
+        mutableStateOf(
+            draft?.screenFlashColor?.let { runCatching { ScreenFlashColor.valueOf(it) }.getOrNull() }
+                ?: initialScreenFlashAction?.screenFlashColor?.let { runCatching { ScreenFlashColor.valueOf(it) }.getOrNull() }
+                ?: ScreenFlashColor.RED
+        )
+    }
+    var screenFlashDurationSeconds by remember {
+        mutableIntStateOf(draft?.screenFlashDurationSeconds ?: initialScreenFlashAction?.screenFlashDurationSeconds ?: 5)
+    }
+    var expandedScreenFlashDuration by remember { mutableStateOf(false) }
+
     // Shared conditions
     var applyOnVibration by remember {
         mutableStateOf(draft?.applyOnVibration ?: initialRule?.applyOnVibration ?: true)
@@ -158,8 +177,9 @@ fun AddEditRuleScreen(
 
     val wakeUpDurationOptions = listOf(0, 5, 10, 15, 30, 60)
     val aodDurationOptions = listOf(-1, -2, 5, 10, 15, 30, 60, 120, 300)
+    val screenFlashDurationOptions = listOf(5, 10, 30, 60, -1)
 
-    val atLeastOneAction = flashEnabled || wakeUpEnabled || aodEnabled
+    val atLeastOneAction = flashEnabled || wakeUpEnabled || aodEnabled || screenFlashEnabled
 
     // Detect conflicts with existing ignore rules
     val ignoreConflicts by remember(selectedApps, titleKeywords, bodyKeywords) {
@@ -220,6 +240,9 @@ fun AddEditRuleScreen(
             pocketModeEnabled = pocketModeEnabled,
             aodEnabled = aodEnabled,
             aodDurationSeconds = aodDurationSeconds,
+            screenFlashEnabled = screenFlashEnabled,
+            screenFlashColor = screenFlashColor.name,
+            screenFlashDurationSeconds = screenFlashDurationSeconds,
             applyOnVibration = applyOnVibration,
             applyOnSilent = applyOnSilent,
             applyOnDND = applyOnDND,
@@ -304,6 +327,8 @@ fun AddEditRuleScreen(
                                         ))
                                     if (aodEnabled)
                                         add(RuleAction.aod(aodDurationSeconds))
+                                    if (screenFlashEnabled)
+                                        add(RuleAction.flashScreen(screenFlashColor, screenFlashDurationSeconds))
                                 }
                                 val newRule = initialRule?.copy(
                                     packageNames = selectedApps.map { it.packageName },
@@ -885,6 +910,111 @@ fun AddEditRuleScreen(
                                                     onClick = {
                                                         aodDurationSeconds = sec
                                                         expandedAodDuration = false
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        HorizontalDivider()
+
+                        // Flash Screen action
+                        Column {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { screenFlashEnabled = !screenFlashEnabled },
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    stringResource(R.string.flash_screen_title),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Switch(
+                                    checked = screenFlashEnabled,
+                                    onCheckedChange = { screenFlashEnabled = it }
+                                )
+                            }
+                            AnimatedVisibility(
+                                visible = screenFlashEnabled,
+                                enter = fadeIn() + expandVertically(),
+                                exit = fadeOut() + shrinkVertically()
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(start = 8.dp, top = 8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    // Colour grid – 12 preset colours, 4 per row
+                                    Text(
+                                        stringResource(R.string.flash_screen_color_label),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        ScreenFlashColor.entries.chunked(4).forEach { row ->
+                                            Row(
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                row.forEach { color ->
+                                                    val isSelected = screenFlashColor == color
+                                                    Surface(
+                                                        modifier = Modifier
+                                                            .size(44.dp)
+                                                            .clickable { screenFlashColor = color },
+                                                        shape = MaterialTheme.shapes.small,
+                                                        color = androidx.compose.ui.graphics.Color(color.colorArgb),
+                                                        border = if (isSelected) androidx.compose.foundation.BorderStroke(
+                                                            3.dp,
+                                                            MaterialTheme.colorScheme.onSurface
+                                                        ) else null,
+                                                        shadowElevation = if (isSelected) 4.dp else 0.dp
+                                                    ) {}
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    // Duration dropdown
+                                    ExposedDropdownMenuBox(
+                                        expanded = expandedScreenFlashDuration,
+                                        onExpandedChange = { expandedScreenFlashDuration = it },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        val durationLabel = when (screenFlashDurationSeconds) {
+                                            -1 -> stringResource(R.string.flash_screen_until_interaction)
+                                            else -> stringResource(R.string.duration_seconds, screenFlashDurationSeconds)
+                                        }
+                                        OutlinedTextField(
+                                            value = durationLabel,
+                                            onValueChange = {},
+                                            readOnly = true,
+                                            label = { Text(stringResource(R.string.flash_screen_duration_label)) },
+                                            trailingIcon = {
+                                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedScreenFlashDuration)
+                                            },
+                                            modifier = Modifier
+                                                .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
+                                                .fillMaxWidth()
+                                        )
+                                        ExposedDropdownMenu(
+                                            expanded = expandedScreenFlashDuration,
+                                            onDismissRequest = { expandedScreenFlashDuration = false }
+                                        ) {
+                                            screenFlashDurationOptions.forEach { sec ->
+                                                val label = when (sec) {
+                                                    -1 -> stringResource(R.string.flash_screen_until_interaction)
+                                                    else -> stringResource(R.string.duration_seconds, sec)
+                                                }
+                                                DropdownMenuItem(
+                                                    text = { Text(label) },
+                                                    onClick = {
+                                                        screenFlashDurationSeconds = sec
+                                                        expandedScreenFlashDuration = false
                                                     }
                                                 )
                                             }
