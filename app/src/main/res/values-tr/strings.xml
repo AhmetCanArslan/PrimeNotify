@@ -285,6 +285,8 @@ Gelecekte bastırmak için günlüklerden bir bildirimi yoksayın.</string>
     <!-- Add/Edit Rule – Ignore conflict warning -->
     <string name="rule_conflict_warning_title">Yoksay listesiyle çakışma</string>
     <string name="rule_conflict_warning_body">Aşağıdaki eşleşmeler yoksay listeniz tarafından engelleniyor. Bu kural hiç tetiklenmeyebilir:</string>
+    <string name="rule_trigger_conflict_title">Çakışan Kural</string>
+    <string name="rule_trigger_conflict_body">Bu tetikleyici mevcut etkin kurallarla örtüşüyor — aynı bildirim için her ikisi de çalışabilir:</string>
 
     <!-- Flash Screen Action -->
     <string name="flash_screen_title">Ekran Flash</string>

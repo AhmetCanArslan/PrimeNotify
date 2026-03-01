@@ -51,6 +51,7 @@ fun AddEditRuleScreen(
     val rulesManager = remember { RulesManager(context) }
     val ignoreManager = remember { IgnoreManager(context) }
     val ignoreRules = remember { ignoreManager.getRules() }
+    val existingRules = remember { rulesManager.getRules() }
     val hasProximitySensor = remember { rulesManager.hasProximitySensor() }
 
     // Draft key – "new" for a new rule, actual ruleId when editing
@@ -222,6 +223,62 @@ fun AddEditRuleScreen(
                 }
             }
             conflicts
+        }
+    }
+
+    // Detect conflicts with other existing notification rules
+    val ruleConflicts by remember(selectedApps, titleKeywords, bodyKeywords) {
+        derivedStateOf {
+            val conflicts = mutableListOf<String>()
+            val selectedPkgs = selectedApps.map { it.packageName }.toSet()
+
+            for (existingRule in existingRules) {
+                if (existingRule.id == initialRule?.id) continue
+                if (!existingRule.isEnabled) continue
+
+                val sharedPkgs = existingRule.packageNames.intersect(selectedPkgs)
+                if (sharedPkgs.isEmpty()) continue
+
+                val appLabel = selectedApps
+                    .filter { it.packageName in sharedPkgs }
+                    .joinToString(", ") { it.name }
+
+                val existingTitleKws = (existingRule.keywords + existingRule.titleKeywords)
+                val existingBodyKws = existingRule.bodyKeywords
+                val existingHasNoKeywords = existingTitleKws.isEmpty() && existingBodyKws.isEmpty()
+                val newHasNoKeywords = titleKeywords.isEmpty() && bodyKeywords.isEmpty()
+
+                when {
+                    existingHasNoKeywords && newHasNoKeywords -> {
+                        conflicts.add("⚠\uFE0F Duplicate: another rule matches all \"$appLabel\" notifications")
+                    }
+                    existingHasNoKeywords -> {
+                        conflicts.add("⚠\uFE0F An existing rule already matches ALL \"$appLabel\" notifications")
+                    }
+                    newHasNoKeywords -> {
+                        conflicts.add("⚠\uFE0F This rule (no keywords) will fire for every \"$appLabel\" notification, including those matched by an existing rule")
+                    }
+                    else -> {
+                        for (kw in titleKeywords) {
+                            if (existingTitleKws.any { ekw ->
+                                    kw.lowercase().contains(ekw.lowercase()) ||
+                                        ekw.lowercase().contains(kw.lowercase())
+                                }) {
+                                conflicts.add("⚠\uFE0F Title keyword \"$kw\" for \"$appLabel\" overlaps with an existing rule")
+                            }
+                        }
+                        for (kw in bodyKeywords) {
+                            if (existingBodyKws.any { ekw ->
+                                    kw.lowercase().contains(ekw.lowercase()) ||
+                                        ekw.lowercase().contains(kw.lowercase())
+                                }) {
+                                conflicts.add("⚠\uFE0F Body keyword \"$kw\" for \"$appLabel\" overlaps with an existing rule")
+                            }
+                        }
+                    }
+                }
+            }
+            conflicts.distinct()
         }
     }
 
@@ -588,6 +645,53 @@ fun AddEditRuleScreen(
                                     text = msg,
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // ── Rule conflict warning ─────────────────────────────────
+                if (ruleConflicts.isNotEmpty()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Warning,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Text(
+                                    text = stringResource(R.string.rule_trigger_conflict_title),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                            }
+                            Text(
+                                text = stringResource(R.string.rule_trigger_conflict_body),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                            ruleConflicts.forEach { msg ->
+                                Text(
+                                    text = msg,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
                                 )
                             }
                         }
