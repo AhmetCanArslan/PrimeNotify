@@ -300,6 +300,13 @@ Ignore a notification from the logs to suppress it in the future.</string>
     <string name="rule_trigger_conflict_title">Overlapping Rule</string>
     <string name="rule_trigger_conflict_body">This trigger overlaps with existing active rules — both may fire for the same notification:</string>
 
+    <!-- Add/Edit Rule – Rule trigger conflict messages -->
+    <string name="conflict_duplicate_rule">⚠️ Duplicate: another rule matches all \"%1$s\" notifications</string>
+    <string name="conflict_existing_all">⚠️ An existing rule already matches ALL \"%1$s\" notifications</string>
+    <string name="conflict_new_all">⚠️ This rule (no keywords) will fire for every \"%1$s\" notification, including those matched by an existing rule</string>
+    <string name="conflict_title_overlap">⚠️ Title keyword \"%1$s\" for \"%2$s\" overlaps with an existing rule</string>
+    <string name="conflict_body_overlap">⚠️ Body keyword \"%1$s\" for \"%2$s\" overlaps with an existing rule</string>
+
     <!-- Flash Screen Action -->
     <string name="flash_screen_title">Flash Screen</string>
     <string name="flash_screen_color_label">Color</string>

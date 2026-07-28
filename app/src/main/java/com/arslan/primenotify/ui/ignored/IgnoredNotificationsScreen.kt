@@ -378,11 +378,25 @@ private fun EditIgnoreRuleDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(
-                text = stringResource(R.string.ignored_edit_dialog_title),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.ignored_edit_dialog_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
+                )
+                IconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = stringResource(R.string.close),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
         },
         text = {
             Column(

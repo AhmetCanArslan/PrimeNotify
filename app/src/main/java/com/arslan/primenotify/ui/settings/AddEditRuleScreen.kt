@@ -250,13 +250,13 @@ fun AddEditRuleScreen(
 
                 when {
                     existingHasNoKeywords && newHasNoKeywords -> {
-                        conflicts.add("⚠\uFE0F Duplicate: another rule matches all \"$appLabel\" notifications")
+                        conflicts.add("DUPLICATE_RULE|$appLabel")
                     }
                     existingHasNoKeywords -> {
-                        conflicts.add("⚠\uFE0F An existing rule already matches ALL \"$appLabel\" notifications")
+                        conflicts.add("EXISTING_ALL|$appLabel")
                     }
                     newHasNoKeywords -> {
-                        conflicts.add("⚠\uFE0F This rule (no keywords) will fire for every \"$appLabel\" notification, including those matched by an existing rule")
+                        conflicts.add("NEW_ALL|$appLabel")
                     }
                     else -> {
                         for (kw in titleKeywords) {
@@ -264,7 +264,7 @@ fun AddEditRuleScreen(
                                     kw.lowercase().contains(ekw.lowercase()) ||
                                         ekw.lowercase().contains(kw.lowercase())
                                 }) {
-                                conflicts.add("⚠\uFE0F Title keyword \"$kw\" for \"$appLabel\" overlaps with an existing rule")
+                                conflicts.add("TITLE_OVERLAP|$kw|$appLabel")
                             }
                         }
                         for (kw in bodyKeywords) {
@@ -272,7 +272,7 @@ fun AddEditRuleScreen(
                                     kw.lowercase().contains(ekw.lowercase()) ||
                                         ekw.lowercase().contains(kw.lowercase())
                                 }) {
-                                conflicts.add("⚠\uFE0F Body keyword \"$kw\" for \"$appLabel\" overlaps with an existing rule")
+                                conflicts.add("BODY_OVERLAP|$kw|$appLabel")
                             }
                         }
                     }
@@ -697,7 +697,7 @@ fun AddEditRuleScreen(
                             )
                             ruleConflicts.forEach { msg ->
                                 Text(
-                                    text = msg,
+                                    text = formatConflictMessage(msg),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onTertiaryContainer
                                 )
@@ -1274,6 +1274,22 @@ fun AddEditRuleScreen(
                 }
             }
         )
+    }
+}
+
+/**
+ * Format conflict message codes into user-facing strings with translations.
+ */
+@Composable
+private fun formatConflictMessage(rawMessage: String): String {
+    val parts = rawMessage.split("|")
+    return when (parts.getOrNull(0)) {
+        "DUPLICATE_RULE" -> stringResource(R.string.conflict_duplicate_rule, parts.getOrNull(1).orEmpty())
+        "EXISTING_ALL" -> stringResource(R.string.conflict_existing_all, parts.getOrNull(1).orEmpty())
+        "NEW_ALL" -> stringResource(R.string.conflict_new_all, parts.getOrNull(1).orEmpty())
+        "TITLE_OVERLAP" -> stringResource(R.string.conflict_title_overlap, parts.getOrNull(1).orEmpty(), parts.getOrNull(2).orEmpty())
+        "BODY_OVERLAP" -> stringResource(R.string.conflict_body_overlap, parts.getOrNull(1).orEmpty(), parts.getOrNull(2).orEmpty())
+        else -> rawMessage
     }
 }
 

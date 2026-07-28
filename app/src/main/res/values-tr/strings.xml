@@ -288,6 +288,13 @@ Gelecekte bastırmak için günlüklerden bir bildirimi yoksayın.</string>
     <string name="rule_trigger_conflict_title">Çakışan Kural</string>
     <string name="rule_trigger_conflict_body">Bu tetikleyici mevcut etkin kurallarla örtüşüyor — aynı bildirim için her ikisi de çalışabilir:</string>
 
+    <!-- Add/Edit Rule – Rule trigger conflict messages -->
+    <string name="conflict_duplicate_rule">⚠️ Yineleme: başka bir kural \"%1$s\" uygulamasından tüm bildirimleri eşleştiriyor</string>
+    <string name="conflict_existing_all">⚠️ Mevcut bir kural zaten \"%1$s\" uygulamasından TÜM bildirimleri eşleştiriyor</string>
+    <string name="conflict_new_all">⚠️ Bu kural (anahtar kelime yok) \"%1$s\" uygulamasından mevcut bir kuralla eşleştirilmiş olanlar da dahil olmak üzere HER bildirimi tetikleyecek</string>
+    <string name="conflict_title_overlap">⚠️ \"%1$s\" başlık anahtar kelimesi \"%2$s\" için mevcut bir kuralla örtüşüyor</string>
+    <string name="conflict_body_overlap">⚠️ \"%1$s\" içerik anahtar kelimesi \"%2$s\" için mevcut bir kuralla örtüşüyor</string>
+
     <!-- Flash Screen Action -->
     <string name="flash_screen_title">Ekran Flash</string>
     <string name="flash_screen_color_label">Renk</string>
