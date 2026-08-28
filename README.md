@@ -2,6 +2,11 @@
 
 Your phone already tells you when something arrives. PrimeNotify decides *how* — flash the camera LED, light up the whole screen, wake the display, or trigger always-on display. One rule, several actions, only for the notifications you actually care about.
 
+<p align="center">
+  <img src="docs/screenshots/home.png" width="300" alt="Home screen with the service toggle, rules, and a test notification button" />
+  <img src="docs/screenshots/create-rule.png" width="300" alt="Create Rule screen with keyword triggers, action toggles, and ringer conditions" />
+</p>
+
 ## What a rule looks like
 
 Pick the apps. Optionally narrow it with keywords (all text, or just the title, or just the body). Then choose what happens:
